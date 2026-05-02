@@ -21,7 +21,7 @@
 <body>
   <canvas id="scene-canvas"></canvas>
 
-  <div id="app">
+  <div id="app" class="app">
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
@@ -52,6 +52,7 @@
       <div class="progress-fill" id="progress-fill"></div>
     </div>
 
+    <div class="app-main">
     <!-- Teaching Panel -->
     <aside class="teach-panel" id="teach-panel">
       <div class="lesson-header">
@@ -153,6 +154,18 @@
       </div>
     </aside>
 
+    <!-- Scene Area (center column, 3D canvas shows through) -->
+    <div class="scene-area" id="scene-area">
+      <!-- Floating Tip -->
+      <div class="floating-tip" id="floating-tip">
+        <div class="tip-content" id="tip-content">
+          <span class="tip-icon" aria-hidden="true">💡</span>
+          <span class="tip-text" data-i18n="tips.drag">Arrastra para rotar la vista • Click en luz para moverla</span>
+        </div>
+        <button class="tip-close" id="tip-close" data-i18n-aria="controls.closeTip">×</button>
+      </div>
+    </div>
+
     <!-- Controls Panel -->
     <aside class="controls-panel collapsed" id="controls-panel">
       <button class="controls-toggle" id="controls-toggle" aria-expanded="false" aria-controls="controls-content">
@@ -196,18 +209,10 @@
         </div>
       </div>
     </aside>
+    </div><!-- /app-main -->
 
-    <!-- Floating Tip -->
-    <div class="floating-tip" id="floating-tip">
-      <div class="tip-content" id="tip-content">
-        <span class="tip-icon" aria-hidden="true">💡</span>
-        <span class="tip-text" data-i18n="tips.drag">Arrastra para rotar la vista • Click en luz para moverla</span>
-      </div>
-      <button class="tip-close" id="tip-close" data-i18n-aria="controls.closeTip">×</button>
-    </div>
-
-    <!-- Copyright Footer -->
-    <footer class="copyright-footer">
+    <!-- Footer -->
+    <footer class="app-footer copyright-footer">
       <span data-i18n="footer.by">Desarrollado por</span> <strong>Néstor De León</strong><br>
       <span data-i18n="footer.for">Para uso libre dentro de la</span><br>
       <a href="https://pca.edu.co" target="_blank" rel="noopener">Corporación Universitaria Politécnico de la

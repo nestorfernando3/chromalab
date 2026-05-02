@@ -213,7 +213,7 @@ body {
 /* ── App Shell ── */
 .app {
   display: grid;
-  grid-template-rows: var(--header-h) 1fr var(--footer-h);
+  grid-template-rows: var(--header-h) auto 1fr var(--footer-h);
   height: 100vh;
   height: 100dvh;
 }
@@ -360,8 +360,7 @@ body {
 
 /* ── Main Layout ── */
 .app-main {
-  display: grid;
-  grid-template-columns: var(--panel-w) 1fr var(--panel-w);
+  display: flex;
   overflow: hidden;
   position: relative;
 }
@@ -374,6 +373,9 @@ body {
   border-right: 1px solid var(--border);
   overflow: hidden;
   transition: width var(--transition-base), transform var(--transition-base);
+  width: var(--panel-w);
+  flex-shrink: 0;
+  background: var(--bg-elevated);
 }
 .controls-panel {
   border-right: none;
@@ -453,11 +455,12 @@ body {
   white-space: nowrap;
 }
 
-/* ── Scene Area ── */
+/* ── Scene Area (center column, canvas shows through) ── */
 .scene-area {
+  flex: 1;
+  min-width: 0;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, #1a1a22 0%, #0F0F12 100%);
 }
 #scene-canvas {
   position: absolute;
@@ -855,6 +858,20 @@ kbd {
 .controls-panel.collapsed {
   width: 44px;
 }
+
+.panel-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.panel-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
 .teach-panel.collapsed .panel-body,
 .controls-panel.collapsed .controls-content,
 .teach-panel.collapsed .panel-header h2,
@@ -884,8 +901,8 @@ kbd {
 /* ── Responsive (Mobile) ── */
 @media (max-width: 960px) {
   .app-main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    position: static;
+    overflow: visible;
   }
   .teach-panel,
   .controls-panel {
@@ -912,6 +929,10 @@ kbd {
   }
   .controls-panel.open {
     transform: translateX(0);
+  }
+  .teach-panel.collapsed,
+  .controls-panel.collapsed {
+    width: min(320px, 80vw); /* collapsed is desktop sidebar state only */
   }
   .color-wheel-container {
     top: 10px;
