@@ -18,7 +18,7 @@ const COPY = {
             goal: 'Tu Objetivo',
             observe: 'Qué Observar',
             practice: 'Práctica',
-            diagram: 'Vista Superior',
+            diagram: 'Rueda Cromática',
             lights: 'Luces en Escena',
             selectedLight: 'Luz Seleccionada',
             ambient: 'Ambiente',
@@ -50,7 +50,7 @@ const COPY = {
             remove: 'Eliminar luz'
         },
         tips: {
-            drag: 'Arrastra para rotar la vista • Click en luz para moverla'
+            drag: 'Arrastra para rotar la vista • Usa los controles para cambiar colores'
         },
         onboarding: {
             title: 'ChromaLab',
@@ -117,7 +117,7 @@ const COPY = {
             goal: 'Your Goal',
             observe: 'What to Observe',
             practice: 'Practice',
-            diagram: 'Top View',
+            diagram: 'Color Wheel',
             lights: 'Lights in Scene',
             selectedLight: 'Selected Light',
             ambient: 'Ambient',
@@ -149,7 +149,7 @@ const COPY = {
             remove: 'Remove light'
         },
         tips: {
-            drag: 'Drag to rotate the view • Click a light to move it'
+            drag: 'Drag to rotate the view • Use controls to change colors'
         },
         onboarding: {
             title: 'ChromaLab',
