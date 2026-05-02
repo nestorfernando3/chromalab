@@ -3,11 +3,11 @@ import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
 const COPY = {
     es: {
         page: {
-            title: 'Light Studio 3D - UPCA',
-            description: 'Aprende iluminación fotográfica de forma interactiva. Software educativo de la Corporación Universitaria Politécnico de la Costa.'
+            title: 'ChromaLab - UPCA',
+            description: 'Aprende teoría del color de forma interactiva. Software educativo de la Corporación Universitaria Politécnico de la Costa.'
         },
         header: {
-            subtitle: 'Iluminación Fotográfica',
+            subtitle: 'Teoría del Color',
             languageLabel: 'Idioma',
             helpTitle: 'Ayuda',
             helpAria: 'Mostrar ayuda',
@@ -34,11 +34,11 @@ const COPY = {
         },
         overview: {
             title: 'Sobre este laboratorio',
-            description: 'Light Studio 3D es un laboratorio web 3D para aprender iluminación fotográfica mediante metas guiadas, observación comparativa y práctica virtual-a-real.',
+            description: 'ChromaLab es un laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.',
             points: [
-                'Explora setups clásicos antes de pasar al estudio físico.',
+                'Explora armonías cromáticas antes de aplicarlas al diseño real.',
                 'Usa objetivos breves y tareas concretas para enfocar la práctica.',
-                'Compara la escena 3D con una réplica real para consolidar el aprendizaje.'
+                'Compara distintas paletas y descubre cómo el color afecta la percepción visual.'
             ]
         },
         buttons: {
@@ -53,17 +53,17 @@ const COPY = {
             drag: 'Arrastra para rotar la vista • Click en luz para moverla'
         },
         onboarding: {
-            title: 'Light Studio 3D',
+            title: 'ChromaLab',
             subtitle: 'Corporación Universitaria Politécnico de la Costa',
-            intro: 'Aprende iluminación fotográfica de forma interactiva. Visualiza en 3D cómo diferentes setups de luz afectan a un retrato.',
+            intro: 'Aprende teoría del color de forma interactiva. Visualiza en 3D cómo diferentes armonías cromáticas afectan la percepción visual.',
             hint: 'Usa ← → para navegar entre lecciones'
         },
         features: [
-            { label: '8 Técnicas' },
+            { label: '8 Lecciones' },
             { label: 'Interactivo' },
             { label: 'Educativo' }
         ],
-        loader: 'Preparando el estudio...',
+        loader: 'Preparando el laboratorio...',
         sandbox: {
             addSpot: 'Spot',
             addPoint: 'Point',
@@ -78,7 +78,7 @@ const COPY = {
             dragHint: 'Arrastra en 3D'
         },
         controls: {
-            dragIndicator: 'Arrastra la luz en la escena 3D',
+            dragIndicator: 'Ajusta matiz, saturación y luminosidad',
             exposure: 'Exposición',
             closeTip: 'Cerrar tip'
         },
@@ -98,15 +98,15 @@ const COPY = {
             by: 'Desarrollado por',
             for: 'Para uso libre dentro de la'
         },
-        goLabDescription: 'Laboratorio web 3D para aprender iluminación fotográfica con metas guiadas, observación comparativa y práctica virtual-a-real.'
+        goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.'
     },
     en: {
         page: {
-            title: 'Light Studio 3D - UPCA',
-            description: 'Interactive way to learn photographic lighting. Educational software from Corporacion Universitaria Politecnico de la Costa.'
+            title: 'ChromaLab - UPCA',
+            description: 'Interactive way to learn color theory. Educational software from Corporacion Universitaria Politecnico de la Costa.'
         },
         header: {
-            subtitle: 'Photographic Lighting',
+            subtitle: 'Color Theory',
             languageLabel: 'Language',
             helpTitle: 'Help',
             helpAria: 'Show help',
@@ -133,11 +133,11 @@ const COPY = {
         },
         overview: {
             title: 'About this lab',
-            description: 'Light Studio 3D is a browser-based 3D lab for learning photographic lighting through guided goals, comparative observation, and virtual-to-real practice.',
+            description: 'ChromaLab is an interactive lab for learning color theory through chromatic exploration and 3D simulation.',
             points: [
-                'Explore classic setups before moving into the physical studio.',
+                'Explore chromatic harmonies before applying them to real design.',
                 'Use short goals and concrete tasks to focus student work.',
-                'Compare the 3D scene with a real-world replica to reinforce learning.'
+                'Compare different palettes and discover how color affects visual perception.'
             ]
         },
         buttons: {
@@ -152,17 +152,17 @@ const COPY = {
             drag: 'Drag to rotate the view • Click a light to move it'
         },
         onboarding: {
-            title: 'Light Studio 3D',
+            title: 'ChromaLab',
             subtitle: 'Corporacion Universitaria Politecnico de la Costa',
-            intro: 'Learn photographic lighting interactively. Visualize in 3D how different light setups affect a portrait.',
+            intro: 'Learn color theory interactively. Visualize in 3D how different color harmonies affect visual perception.',
             hint: 'Use ← → to move between lessons'
         },
         features: [
-            { label: '8 Techniques' },
+            { label: '8 Lessons' },
             { label: 'Interactive' },
             { label: 'Educational' }
         ],
-        loader: 'Preparing the studio...',
+        loader: 'Preparing the lab...',
         sandbox: {
             addSpot: 'Spot',
             addPoint: 'Point',
@@ -177,7 +177,7 @@ const COPY = {
             dragHint: 'Drag in 3D'
         },
         controls: {
-            dragIndicator: 'Drag the light in the 3D scene',
+            dragIndicator: 'Adjust hue, saturation and lightness',
             exposure: 'Exposure',
             closeTip: 'Close tip'
         },
@@ -197,7 +197,7 @@ const COPY = {
             by: 'Developed by',
             for: 'Free use within'
         },
-        goLabDescription: 'Browser-based 3D lab for learning photographic lighting through guided goals, comparative observation, and virtual-to-real practice.'
+        goLabDescription: 'Interactive lab for learning color theory through chromatic exploration and 3D simulation.'
     }
 };
 

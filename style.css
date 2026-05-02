@@ -869,6 +869,18 @@ kbd {
   padding: 16px 0;
 }
 
+/* ── SVG Diagram (Color Wheel) ── */
+.diagram-container {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 8px;
+}
+.diagram-svg {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+}
+
 /* ── Responsive (Mobile) ── */
 @media (max-width: 960px) {
   .app-main {
