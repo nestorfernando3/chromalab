@@ -1,0 +1,27 @@
+{
+  "name": "chromalab",
+  "private": true,
+  "version": "1.0.0",
+  "productName": "ChromaLab",
+  "description": "Laboratorio virtual interactivo para aprender teoría del color a través de una escena 3D",
+  "author": "Néstor De León - UPCA",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^28.1.0",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "vite": "^7.2.4",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "three": "^0.182.0"
+  }
+}

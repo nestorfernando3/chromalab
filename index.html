@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="description" content="Aprende teoría del color de forma interactiva. Laboratorio virtual educativo. Néstor De León — UPCA">
+  <meta name="author" content="Néstor De León — UPCA">
+  <meta name="theme-color" content="#C41E3A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>ChromaLab — UPCA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="manifest" href="/manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@350;400;450;500;550;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <canvas id="scene-canvas"></canvas>
+  <div id="app">
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-icon">🎨</div>
+        <div class="header-title">
+          <h1>ChromaLab</h1>
+          <span class="header-subtitle" data-i18n="header.subtitle">Teoría del Color</span>
+        </div>
+      </div>
+      <div class="header-center"><div class="upca-badge">UPCA</div></div>
+      <div class="header-right">
+        <div class="language-switch" role="group" data-i18n-aria="header.languageLabel" aria-label="Language">
+          <button class="language-btn active" type="button" data-lang="es" aria-pressed="true">ES</button>
+          <button class="language-btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <button class="icon-button" id="btn-help" data-i18n-title="header.helpTitle" data-i18n-aria="header.helpAria">?</button>
+        <button class="icon-button" id="btn-screenshot" data-i18n-title="header.screenshotTitle" data-i18n-aria="header.screenshotAria">📷</button>
+      </div>
+    </header>
+
+    <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <aside class="teach-panel" id="teach-panel">
+      <div class="lesson-header">
+        <div class="lesson-number" id="lesson-number">1</div>
+        <div class="lesson-meta">
+          <span class="lesson-category" id="lesson-category">Fundamentos</span>
+          <h2 class="lesson-title" id="lesson-title">Matiz, Saturación y Valor</h2>
+        </div>
+        <div class="difficulty-badge" id="difficulty-badge">
+          <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+      </div>
+      <div class="panel-scroll">
+        <div class="goal-section">
+          <div class="section-label"><span class="icon">🎯</span><span class="label-text" data-i18n="sections.goal">Tu Objetivo</span></div>
+          <p id="goal-text"></p>
+        </div>
+        <div class="observe-section">
+          <div class="section-label"><span class="icon">👁️</span><span class="label-text" data-i18n="sections.observe">Qué Observar</span></div>
+          <ul class="observe-list" id="observe-list"></ul>
+        </div>
+        <div class="practice-section">
+          <div class="section-label"><span class="icon">📝</span><span class="label-text" data-i18n="sections.practice">Práctica</span></div>
+          <div class="practice-card">
+            <div class="practice-block"><span class="practice-label" data-i18n="practice.task">Tarea</span><p id="task-text"></p></div>
+            <div class="practice-block"><span class="practice-label" data-i18n="practice.output">Qué entregar</span><p id="output-text"></p></div>
+          </div>
+        </div>
+        <div class="diagram-section">
+          <div class="section-label"><span class="icon">📐</span><span class="label-text" data-i18n="sections.diagram">Rueda Cromática</span></div>
+          <div class="diagram-container">
+            <svg class="diagram-svg" viewBox="0 0 200 200" id="lighting-diagram"></svg>
+          </div>
+        </div>
+        <div class="lights-overview">
+          <div class="section-label"><span class="icon">🎨</span><span class="label-text" data-i18n="sections.lights">Colores en Escena</span></div>
+          <div class="lights-list" id="lights-overview-list"></div>
+        </div>
+      </div>
+      <div class="lesson-nav">
+        <button class="nav-button prev" id="btn-prev" disabled><span class="arrow">←</span><span data-i18n="buttons.prev">Anterior</span></button>
+        <div class="lesson-dots" id="lesson-dots"></div>
+        <button class="nav-button next" id="btn-next"><span data-i18n="buttons.next">Siguiente</span><span class="arrow">→</span></button>
+      </div>
+    </aside>
+
+    <aside class="controls-panel collapsed" id="controls-panel">
+      <button class="controls-toggle" id="controls-toggle" aria-expanded="false" aria-controls="controls-content">
+        <span class="toggle-icon">⚙️</span><span class="toggle-label" data-i18n="sections.controls">Controles</span>
+      </button>
+      <div class="controls-content" id="controls-content">
+        <div class="drag-mode-indicator hidden" id="drag-indicator" data-i18n="controls.dragIndicator">🎨 Ajusta matiz, saturación y luminosidad</div>
+        <div class="control-section">
+          <div class="section-label small"><span data-i18n="sections.harmony">Armonía</span></div>
+          <div class="light-selector" id="light-selector"></div>
+        </div>
+        <div class="control-section" id="light-controls"></div>
+        <div class="control-section">
+          <div class="section-label small"><span data-i18n="sections.ambient">Ambiente</span></div>
+          <div class="control-row compact">
+            <span class="control-label" id="exposure-label" data-i18n="controls.exposure">Exposición</span>
+            <input type="range" class="control-slider" id="exposure" min="0.5" max="2" step="0.05" value="1.2" aria-labelledby="exposure-label">
+          </div>
+        </div>
+        <div class="control-section">
+          <div class="section-label small"><span>🖼️</span><span data-i18n="sections.background">Fondo</span></div>
+          <div class="bg-swatches" id="bg-swatches"></div>
+          <div class="control-row compact">
+            <span class="control-label" data-i18n="sections.custom">Personalizado</span>
+            <input type="color" class="control-color" id="bg-custom-color" value="#2a2a3a">
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="floating-tip" id="floating-tip">
+      <div class="tip-content" id="tip-content">
+        <span class="tip-icon" aria-hidden="true">🎨</span>
+        <span class="tip-text" data-i18n="tips.drag">Arrastra para rotar la vista • Usa los controles para explorar armonías</span>
+      </div>
+      <button class="tip-close" id="tip-close" data-i18n-aria="controls.closeTip">×</button>
+    </div>
+
+    <footer class="copyright-footer">
+      <span data-i18n="footer.by">Desarrollado por</span> <strong>Néstor De León</strong><br>
+      <span data-i18n="footer.for">Para uso libre dentro de la</span><br>
+      <a href="https://pca.edu.co" target="_blank" rel="noopener">Corporación Universitaria Politécnico de la Costa</a><br>
+      © 2026 UPCA
+    </footer>
+
+    <div class="onboarding-overlay" id="onboarding">
+      <div class="onboarding-card">
+        <div class="onboarding-logo"><div class="logo-icon">🎨</div></div>
+        <h2 data-i18n="onboarding.title">ChromaLab</h2>
+        <p class="subtitle" data-i18n="onboarding.subtitle">Corporación Universitaria Politécnico de la Costa</p>
+        <p data-i18n="onboarding.intro">Aprende teoría del color de forma interactiva. Explora armonías cromáticas en una habitación 3D y domina las bases del color.</p>
+        <div class="overview-section">
+          <div class="section-label small"><span class="icon">📘</span><span data-i18n="overview.title">Sobre este laboratorio</span></div>
+          <p data-i18n="overview.description">ChromaLab es un laboratorio web 3D para aprender teoría del color mediante metas guiadas, exploración interactiva y aplicación a escenas tridimensionales.</p>
+          <ul class="overview-list">
+            <li data-i18n="overview.points.0">Explora armonías cromáticas en una habitación 3D antes de aplicarlas al diseño real.</li>
+            <li data-i18n="overview.points.1">Usa objetivos breves y tareas concretas para enfocar la práctica.</li>
+            <li data-i18n="overview.points.2">Compara distintas paletas y descubre cómo el color afecta la percepción del espacio.</li>
+          </ul>
+        </div>
+        <div class="onboarding-features">
+          <div class="feature"><span class="feature-icon">🎨</span><span data-i18n="features.0.label">8 Lecciones</span></div>
+          <div class="feature"><span class="feature-icon">🖱️</span><span data-i18n="features.1.label">Interactivo</span></div>
+          <div class="feature"><span class="feature-icon">📚</span><span data-i18n="features.2.label">Educativo</span></div>
+        </div>
+        <button class="cta-button" id="btn-start"><span data-i18n="buttons.start">Comenzar</span><span class="arrow" aria-hidden="true">→</span></button>
+        <p class="onboarding-hint" data-i18n="onboarding.hint">Usa ← → para navegar entre lecciones</p>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p data-i18n="loader">Preparando el laboratorio...</p>
+    </div>
+  </div>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
