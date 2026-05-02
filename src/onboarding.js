@@ -4,21 +4,12 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
     const tipClose = document.getElementById('tip-close');
 
     const hasSeenOnboarding = typeof localStorage !== 'undefined'
-        ? localStorage.getItem('chromalabOnboarding')
+        ? localStorage.getItem('lightStudioOnboardingUPCA')
         : null;
 
-    if (skipAutoStart || !hasSeenOnboarding) {
-        // Auto-hide after 1.5s for first visit
-        setTimeout(() => {
-            overlay?.classList.add('hidden');
-            if (onStartCallback && !hasSeenOnboarding) {
-                if (typeof localStorage !== 'undefined') {
-                    localStorage.setItem('chromalabOnboarding', 'true');
-                }
-                onStartCallback();
-            }
-        }, 1500);
-    } else {
+    if (skipAutoStart) {
+        overlay?.classList.add('hidden');
+    } else if (hasSeenOnboarding) {
         overlay?.classList.add('hidden');
         if (onStartCallback) onStartCallback();
     }
@@ -26,7 +17,7 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
     startBtn?.addEventListener('click', () => {
         overlay?.classList.add('hidden');
         if (typeof localStorage !== 'undefined') {
-            localStorage.setItem('chromalabOnboarding', 'true');
+            localStorage.setItem('lightStudioOnboardingUPCA', 'true');
         }
         if (onStartCallback) onStartCallback();
     });
