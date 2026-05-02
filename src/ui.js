@@ -106,7 +106,7 @@ export class UI {
         await switchModelForLighting(this.currentPreset.id);
 
         this.lightingSystem.loadPreset(this.currentPreset);
-        this._renderCurrentLesson({ collapseControls: true, preserveSelection: false });
+        this._renderCurrentLesson({ collapseControls: false, preserveSelection: false });
         appEvents.emit('presetLoaded', this.currentPreset);
     }
 
