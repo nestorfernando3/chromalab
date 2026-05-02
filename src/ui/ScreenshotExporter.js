@@ -14,12 +14,18 @@ export class ScreenshotExporter {
         const canvas = document.getElementById('scene-canvas');
         if (!canvas) return;
 
-        // Force a synchronous render right before capturing
-        appEvents.emit('forceRenderSync');
+        try {
+            // Force a synchronous render right before capturing
+            appEvents.emit('forceRenderSync');
 
-        const link = document.createElement('a');
-        link.download = `lighting-${this.getCurrentPresetId() || 'studio'}-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+            const filename = `lighting-${this.getCurrentPresetId() || 'studio'}-${Date.now()}.png`;
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            appEvents.emit('screenshotTaken', { filename });
+        } catch (error) {
+            appEvents.emit('screenshotFailed', { error });
+        }
     }
 }

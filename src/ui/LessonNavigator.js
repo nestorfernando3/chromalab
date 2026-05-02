@@ -22,10 +22,10 @@ export class LessonNavigator {
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    updateProgress(index) {
+    updateProgress(index, completedCount = index + 1) {
         const fill = document.getElementById('progress-fill');
         if (fill) {
-            fill.style.width = `${((index + 1) / this.presetNames.length) * 100}%`;
+            fill.style.width = `${(Math.max(index + 1, completedCount) / this.presetNames.length) * 100}%`;
         }
     }
 
@@ -66,14 +66,17 @@ export class LessonNavigator {
         if (output) output.textContent = preset.practice?.expectedOutput || '';
     }
 
-    updateNavigation(index) {
+    updateNavigation(index, completedIndexes = []) {
         const prevBtn = document.getElementById('btn-prev');
         const nextBtn = document.getElementById('btn-next');
         if (prevBtn) prevBtn.disabled = index === 0;
         if (nextBtn) nextBtn.disabled = index === this.presetNames.length - 1;
 
+        const completedSet = completedIndexes instanceof Set ? completedIndexes : new Set(completedIndexes);
+
         document.querySelectorAll('.lesson-dot').forEach((dot, i) => {
             dot.classList.toggle('active', i === index);
+            dot.classList.toggle('completed', completedSet.has(i));
         });
     }
 
@@ -113,7 +116,9 @@ export class LessonNavigator {
 
     _setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT') return;
+            const tag = e.target?.tagName;
+            if (tag && ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+            if (e.target?.isContentEditable) return;
 
             switch (e.key) {
                 case 'ArrowLeft':
@@ -128,6 +133,9 @@ export class LessonNavigator {
                     break;
                 case 'r': case 'R':
                     appEvents.emit('resetControls');
+                    break;
+                case 'Escape':
+                    appEvents.emit('escapeKey');
                     break;
                 default: {
                     const idx = parseInt(e.key) - 1;

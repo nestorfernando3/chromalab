@@ -25,7 +25,12 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="app-icon">🎨</div>
+        <div class="app-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="icon-svg icon-brand" role="img">
+            <path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5S16.7 20.5 12 20.5 3.5 16.7 3.5 12 7.3 3.5 12 3.5Zm0 3a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11Z" fill="currentColor" opacity="0.22"/>
+            <path d="M8.2 13.8c0-2.1 1.7-3.8 3.8-3.8h4.3c1 0 1.8.8 1.8 1.8v2.2c0 2.8-2.2 5-5 5H12c-2.1 0-3.8-1.7-3.8-3.8Z" fill="currentColor"/>
+          </svg>
+        </div>
         <div class="header-title">
           <h1>ChromaLab</h1>
           <span class="header-subtitle" data-i18n="header.subtitle">Teoría del Color</span>
@@ -41,9 +46,21 @@
           <button class="language-btn active" type="button" data-lang="es" aria-pressed="true">ES</button>
           <button class="language-btn" type="button" data-lang="en" aria-pressed="false">EN</button>
         </div>
-        <button class="icon-button" id="btn-help" data-i18n-title="header.helpTitle" data-i18n-aria="header.helpAria">?</button>
-        <button class="icon-button" id="btn-screenshot" data-i18n-title="header.screenshotTitle"
-          data-i18n-aria="header.screenshotAria">📷</button>
+        <button class="mobile-panel-toggle" id="mobile-teach-toggle" type="button" aria-controls="teach-panel" aria-expanded="false">
+          <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span data-i18n="header.lessonsToggle">Lecciones</span>
+        </button>
+        <button class="mobile-panel-toggle" id="mobile-controls-toggle" type="button" aria-controls="controls-panel" aria-expanded="false">
+          <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 3.5v2.2M12 18.3v2.2M4.8 6.8l1.5 1.5M17.7 17.7l1.5 1.5M3.5 12h2.2M18.3 12h2.2M6.3 17.7l1.5-1.5M17.7 6.3l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span data-i18n="header.controlsToggle">Controles</span>
+        </button>
+        <button class="icon-button" id="btn-help" type="button" data-i18n-title="header.helpTitle" data-i18n-aria="header.helpAria">
+          <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 18.2v.2M9.8 8.8a2.7 2.7 0 1 1 4.7 1.8c-.8.7-1.5 1.2-1.5 2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <button class="icon-button" id="btn-screenshot" type="button" data-i18n-title="header.screenshotTitle"
+          data-i18n-aria="header.screenshotAria">
+          <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M7 6.5h3l1.1-1.6h1.8L14 6.5h3A2.5 2.5 0 0 1 19.5 9v7A2.5 2.5 0 0 1 17 18.5H7A2.5 2.5 0 0 1 4.5 16V9A2.5 2.5 0 0 1 7 6.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
       </div>
     </header>
 
@@ -71,7 +88,7 @@
       <div class="panel-scroll">
         <div class="goal-section">
           <div class="section-label">
-            <span class="icon">🎯</span>
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span class="label-text" data-i18n="sections.goal">Tu Objetivo</span>
           </div>
           <p id="goal-text">Aprende teoría del color de forma interactiva.</p>
@@ -79,7 +96,7 @@
 
         <div class="observe-section">
           <div class="section-label">
-            <span class="icon">👁️</span>
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
             <span class="label-text" data-i18n="sections.observe">Qué Observar</span>
           </div>
           <ul class="observe-list" id="observe-list"></ul>
@@ -87,7 +104,7 @@
 
         <div class="practice-section">
           <div class="section-label">
-            <span class="icon">📝</span>
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M6 4.8h8l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 19V6.3A1.5 1.5 0 0 1 6.5 4.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 4.8V9h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 12h6M7.5 15h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span class="label-text" data-i18n="sections.practice">Práctica</span>
           </div>
           <div class="practice-card">
@@ -104,7 +121,7 @@
 
         <div class="diagram-section">
           <div class="section-label">
-            <span class="icon">📐</span>
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M4.5 18.5V5.5h13l2 2v11h-13Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 14l8-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 18.5h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span class="label-text" data-i18n="sections.diagram">Rueda Cromática</span>
           </div>
           <div class="diagram-container">
@@ -114,7 +131,7 @@
 
         <div class="lights-overview">
           <div class="section-label">
-            <span class="icon">💡</span>
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M9 18h6M10 21h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 10a4 4 0 1 1 8 0c0 1.8-.9 2.8-1.7 3.7-.8.8-1.3 1.6-1.3 2.3h-2c0-.7-.5-1.5-1.3-2.3C8.9 12.8 8 11.8 8 10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
             <span class="label-text" data-i18n="sections.lights">Luces en Escena</span>
             <span class="light-drag-hint" data-i18n="sandbox.dragHint">Arrastra en 3D</span>
           </div>
@@ -125,16 +142,16 @@
             </div>
             <div class="sandbox-add-buttons">
               <button class="sandbox-add-btn" data-type="spot" data-i18n-title="sandbox.addSpotTitle" title="Foco concentrado">
-                <span class="add-icon">🔦</span> <span class="add-label" data-i18n="sandbox.addSpot">Spot</span>
+                <svg viewBox="0 0 24 24" class="icon-svg add-icon" aria-hidden="true"><path d="M10 4.5h4l1 3H9l1-3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 7.5v9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 16.5c0 1.7-1 2.8-2.8 3.5M12 16.5c0 1.7 1 2.8 2.8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> <span class="add-label" data-i18n="sandbox.addSpot">Spot</span>
               </button>
               <button class="sandbox-add-btn" data-type="point" data-i18n-title="sandbox.addPointTitle" title="Luz puntual omnidireccional">
-                <span class="add-icon">💡</span> <span class="add-label" data-i18n="sandbox.addPoint">Point</span>
+                <svg viewBox="0 0 24 24" class="icon-svg add-icon" aria-hidden="true"><path d="M9 18h6M10 21h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 10a4 4 0 1 1 8 0c0 1.8-.9 2.8-1.7 3.7-.8.8-1.3 1.6-1.3 2.3h-2c0-.7-.5-1.5-1.3-2.3C8.9 12.8 8 11.8 8 10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> <span class="add-label" data-i18n="sandbox.addPoint">Point</span>
               </button>
               <button class="sandbox-add-btn" data-type="directional" data-i18n-title="sandbox.addDirectionalTitle" title="Luz direccional tipo sol">
-                <span class="add-icon">☀️</span> <span class="add-label" data-i18n="sandbox.addDirectional">Directional</span>
+                <svg viewBox="0 0 24 24" class="icon-svg add-icon" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6.2 6.2l1.4 1.4M16.4 16.4l1.4 1.4M17.8 6.2l-1.4 1.4M7.6 16.4l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> <span class="add-label" data-i18n="sandbox.addDirectional">Directional</span>
               </button>
               <button class="sandbox-add-btn" data-type="rect" data-i18n-title="sandbox.addRectTitle" title="Panel de luz suave (softbox)">
-                <span class="add-icon">🟥</span> <span class="add-label" data-i18n="sandbox.addRect">Softbox</span>
+                <svg viewBox="0 0 24 24" class="icon-svg add-icon" aria-hidden="true"><rect x="5" y="6" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg> <span class="add-label" data-i18n="sandbox.addRect">Softbox</span>
               </button>
             </div>
           </div>
@@ -159,23 +176,27 @@
       <!-- Floating Tip -->
       <div class="floating-tip" id="floating-tip">
         <div class="tip-content" id="tip-content">
-          <span class="tip-icon" aria-hidden="true">💡</span>
-          <span class="tip-text" data-i18n="tips.drag">Arrastra para rotar la vista • Click en luz para moverla</span>
+          <svg viewBox="0 0 24 24" class="icon-svg tip-icon" aria-hidden="true"><path d="M9 18h6M10 21h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 10a4 4 0 1 1 8 0c0 1.8-.9 2.8-1.7 3.7-.8.8-1.3 1.6-1.3 2.3h-2c0-.7-.5-1.5-1.3-2.3C8.9 12.8 8 11.8 8 10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span class="tip-text" data-i18n="tips.drag">Arrastra para rotar la vista • Haz clic en una luz para editarla</span>
         </div>
-        <button class="tip-close" id="tip-close" data-i18n-aria="controls.closeTip">×</button>
+        <button class="tip-close" id="tip-close" type="button" data-i18n-aria="controls.closeTip">
+          <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
       </div>
     </div>
+
+    <div class="status-toast" id="status-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Controls Panel -->
     <aside class="controls-panel" id="controls-panel">
       <button class="controls-toggle" id="controls-toggle" aria-expanded="true" aria-controls="controls-content">
-        <span class="toggle-icon">⚙️</span>
+        <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 3.5v2.1M12 18.4v2.1M4.9 6.9l1.5 1.5M17.6 17.6l1.5 1.5M3.5 12h2.1M18.4 12h2.1M6.4 17.6l1.5-1.5M17.6 6.4l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
         <span class="toggle-label" data-i18n="sections.controls">Controles</span>
       </button>
 
       <div class="controls-content" id="controls-content">
         <div class="drag-mode-indicator hidden" id="drag-indicator" data-i18n="controls.dragIndicator">
-          🖱️ Arrastra la luz en la escena 3D
+          Arrastra la luz o ajusta sus valores aquí
         </div>
 
         <div class="control-section">
@@ -195,7 +216,7 @@
         </div>
 
         <div class="control-section">
-          <div class="section-label small"><span>🎨</span> <span data-i18n="sections.background">Fondo</span></div>
+          <div class="section-label small"><svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M5 6.5h14v11H5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 15.5 11 11l2.5 2.5 1.5-1.5 2 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> <span data-i18n="sections.background">Fondo</span></div>
           <div class="bg-swatches" id="bg-swatches"></div>
           <div class="control-row compact">
             <span class="control-label" data-i18n="sections.custom">Personalizado</span>
@@ -204,7 +225,7 @@
         </div>
 
         <div class="control-section">
-          <div class="section-label small"><span>👤</span> <span data-i18n="sections.model">Modelo</span></div>
+          <div class="section-label small"><svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 19c1.2-3 3.1-4.6 6-4.6S16.8 16 18 19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> <span data-i18n="sections.model">Modelo</span></div>
           <div class="model-selector" id="model-selector"></div>
         </div>
       </div>
@@ -224,7 +245,9 @@
     <div class="onboarding-overlay" id="onboarding">
       <div class="onboarding-card">
         <div class="onboarding-logo">
-          <div class="logo-icon">🎨</div>
+          <div class="logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="icon-svg icon-brand" role="img"><path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5S16.7 20.5 12 20.5 3.5 16.7 3.5 12 7.3 3.5 12 3.5Zm0 3a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11Z" fill="currentColor" opacity="0.22"/><path d="M8.2 13.8c0-2.1 1.7-3.8 3.8-3.8h4.3c1 0 1.8.8 1.8 1.8v2.2c0 2.8-2.2 5-5 5H12c-2.1 0-3.8-1.7-3.8-3.8Z" fill="currentColor"/></svg>
+          </div>
         </div>
         <h2 data-i18n="onboarding.title">ChromaLab</h2>
         <p class="subtitle" data-i18n="onboarding.subtitle">Corporación Universitaria Politécnico de la Costa</p>
@@ -232,7 +255,7 @@
 
         <div class="overview-section">
           <div class="section-label small">
-            <span class="icon">📘</span>
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M6 5.5h5.5c1.2 0 2.2 1 2.2 2.2V18c-1-.8-1.8-1.2-3-1.2H6a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 6 5.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18 5.5h-5.5c-1.2 0-2.2 1-2.2 2.2V18c1-.8 1.8-1.2 3-1.2H18a1.5 1.5 0 0 0 1.5-1.5V7A1.5 1.5 0 0 0 18 5.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
             <span data-i18n="overview.title">Sobre este laboratorio</span>
           </div>
           <p data-i18n="overview.description">ChromaLab es un laboratorio web 3D para aprender teoría del color mediante metas guiadas, observación comparativa y práctica virtual-a-real.</p>
@@ -245,15 +268,15 @@
 
         <div class="onboarding-features">
           <div class="feature">
-            <span class="feature-icon">🎨</span>
+            <svg viewBox="0 0 24 24" class="icon-svg feature-icon" aria-hidden="true"><path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5S16.7 20.5 12 20.5 3.5 16.7 3.5 12 7.3 3.5 12 3.5Zm0 3a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11Z" fill="currentColor" opacity="0.22"/><path d="M8.2 13.8c0-2.1 1.7-3.8 3.8-3.8h4.3c1 0 1.8.8 1.8 1.8v2.2c0 2.8-2.2 5-5 5H12c-2.1 0-3.8-1.7-3.8-3.8Z" fill="currentColor"/></svg>
             <span data-i18n="features.0.label">8 Lecciones</span>
           </div>
           <div class="feature">
-            <span class="feature-icon">🖱️</span>
+            <svg viewBox="0 0 24 24" class="icon-svg feature-icon" aria-hidden="true"><path d="M8 6.8A2.8 2.8 0 0 1 10.8 4h2.4A2.8 2.8 0 0 1 16 6.8V12a4 4 0 0 1-8 0V6.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span data-i18n="features.1.label">Interactivo</span>
           </div>
           <div class="feature">
-            <span class="feature-icon">📚</span>
+            <svg viewBox="0 0 24 24" class="icon-svg feature-icon" aria-hidden="true"><path d="M6 5.5h5.5c1.2 0 2.2 1 2.2 2.2V18c-1-.8-1.8-1.2-3-1.2H6a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 6 5.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18 5.5h-5.5c-1.2 0-2.2 1-2.2 2.2V18c1-.8 1.8-1.2 3-1.2H18a1.5 1.5 0 0 0 1.5-1.5V7A1.5 1.5 0 0 0 18 5.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
             <span data-i18n="features.2.label">Educativo</span>
           </div>
         </div>

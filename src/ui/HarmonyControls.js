@@ -25,7 +25,7 @@ export class HarmonyControls {
     }
 
     _renderHarmonyButtons() {
-        const container = document.getElementById('light-selector');
+        const container = document.getElementById('harmony-selector');
         if (!container) return;
         clearChildren(container);
 
@@ -47,7 +47,7 @@ export class HarmonyControls {
     }
 
     _renderSliders() {
-        const container = document.getElementById('light-controls');
+        const container = document.getElementById('harmony-controls');
         if (!container) return;
         clearChildren(container);
 
@@ -96,7 +96,7 @@ export class HarmonyControls {
     }
 
     _renderColorPreview() {
-        const section = document.getElementById('light-controls');
+        const section = document.getElementById('harmony-controls');
         if (!section) return;
 
         const colors = this.colorSystem.getColors();

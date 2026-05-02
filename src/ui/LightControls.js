@@ -13,11 +13,12 @@ export class LightControls {
      * @param {Function} getLanguage - returns current UI language
      * @param {Function} onDiagramUpdate - callback to re-render diagram
      */
-    constructor(lightingSystem, getCurrentPreset, getLanguage, onDiagramUpdate) {
+    constructor(lightingSystem, getCurrentPreset, getLanguage, onDiagramUpdate, onDuplicateLight) {
         this.lightingSystem = lightingSystem;
         this.getCurrentPreset = getCurrentPreset;
         this.getLanguage = getLanguage;
         this.onDiagramUpdate = onDiagramUpdate;
+        this.onDuplicateLight = onDuplicateLight;
         this.selectedLightId = null;
     }
 
@@ -40,6 +41,8 @@ export class LightControls {
 
         // Show controls panel
         document.getElementById('controls-panel')?.classList.remove('collapsed');
+        document.getElementById('controls-panel')?.classList.add('open');
+        document.getElementById('mobile-controls-toggle')?.setAttribute('aria-expanded', 'true');
         document.getElementById('drag-indicator')?.classList.remove('hidden');
 
         this.renderLightControls(light);
@@ -159,8 +162,9 @@ export class LightControls {
             ? `ctrl-${prop}`
             : `ctrl-${prop}`;
         const valId = id.replace('ctrl', 'val');
+        const labelId = `${id}-label`;
 
-        const labelEl = createElement('span', { className: 'control-label' }, [label]);
+        const labelEl = createElement('span', { className: 'control-label', id: labelId }, [label]);
         const slider = createElement('input', {
             type: 'range',
             className: 'control-slider',
@@ -168,7 +172,8 @@ export class LightControls {
             min: String(min),
             max: String(max),
             step: String(step),
-            value: String(value)
+            value: String(value),
+            'aria-labelledby': labelId
         });
         const valueSpan = createElement('span', { className: 'control-value', id: valId }, [
             Number(value).toFixed(decimals)
@@ -179,12 +184,14 @@ export class LightControls {
 
     /** Build a labelled color-picker row */
     _makeColorRow(label, prop, initialColor) {
-        const labelEl = createElement('span', { className: 'control-label' }, [label]);
+        const labelId = `ctrl-${prop}-label`;
+        const labelEl = createElement('span', { className: 'control-label', id: labelId }, [label]);
         const picker = createElement('input', {
             type: 'color',
             className: 'control-color',
             id: `ctrl-${prop}`,
-            value: initialColor
+            value: initialColor,
+            'aria-labelledby': labelId
         });
         return createElement('div', { className: 'control-row' }, [labelEl, picker]);
     }
@@ -256,7 +263,7 @@ export class LightControls {
             if (newConfig) {
                 preset.lights.push(newConfig);
                 // Signal that a new light was added
-                this._onDupLight?.(newConfig);
+                this.onDuplicateLight?.(newConfig);
             }
         });
     }

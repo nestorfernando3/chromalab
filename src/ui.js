@@ -8,7 +8,7 @@
  *  - ScreenshotExporter → PNG download
  */
 import { getPresetNames, getPreset, localizePreset } from './presets.js';
-import { switchModelForLighting, switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
+import { switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
 import { setupOnboarding } from './onboarding.js';
 import { renderDiagram } from './diagram.js';
 import { clearChildren } from './utils/dom.js';
@@ -17,8 +17,13 @@ import { LightControls } from './ui/LightControls.js';
 import { appEvents } from './utils/events.js';
 import { SandboxManager } from './ui/SandboxManager.js';
 import { ScreenshotExporter } from './ui/ScreenshotExporter.js';
-import { applyStaticTranslations } from './localization.js';
+import { applyStaticTranslations, getAppCopy } from './localization.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage, storeLanguage } from './runtime.js';
+
+const UI_STORAGE_KEYS = {
+    controlsCollapsed: 'chromaLab.controlsCollapsed',
+    completedLessons: 'chromaLab.completedLessons'
+};
 
 export class UI {
     constructor(lightingSystem, scene, renderer, environment, options = {}) {
@@ -33,6 +38,9 @@ export class UI {
         this.currentPresetIndex = 0;
         this.activeModelId = getModelRegistry().at(0)?.id || 'head';
         this.activeBackgroundColor = getBackgroundPresets().at(0)?.color || '#080810';
+        this.controlsCollapsed = this._readControlsCollapsed();
+        this.completedLessonIds = new Set(this._readCompletedLessons());
+        this._toastTimer = null;
         this._bgCustomColorInput = null;
         this._bgCustomColorHandler = null;
 
@@ -46,13 +54,9 @@ export class UI {
             lightingSystem,
             () => this.currentPreset,
             () => this.lang,
-            () => this._updateDiagram()
+            () => this._updateDiagram(),
+            (newConfig) => this._onSandboxChange(newConfig)
         );
-
-        // Wire duplicate-light callback — push already done in LightControls._bindControlEvents
-        this.lightControls._onDupLight = (newConfig) => {
-            this._onSandboxChange(newConfig);
-        };
 
         this.sandboxManager = new SandboxManager(
             lightingSystem,
@@ -72,6 +76,9 @@ export class UI {
         this._setupLanguageSwitch();
         this._renderBackgroundControls();
         this._renderModelSelector();
+        if (this.embedMode) this.controlsCollapsed = true;
+        this._applyControlsCollapsedState(this.controlsCollapsed, { persist: false });
+        this._syncMobilePanelButtons();
 
         setupOnboarding(() => this.loadInitialLesson(), { skipAutoStart: this.embedMode });
         if (this.embedMode) {
@@ -97,21 +104,29 @@ export class UI {
         const presetNames = getPresetNames();
         if (index < 0 || index >= presetNames.length) return;
 
+        const previousId = this.currentPreset?.id || null;
+        const nextPresetId = presetNames[index];
+        if (previousId && previousId !== nextPresetId) {
+            this._markLessonCompleted(previousId);
+        }
+
         this.currentPresetIndex = index;
         this.navigator.index = index;
-        const presetName = presetNames[index];
-        const rawPreset = getPreset(presetName);
+        const rawPreset = getPreset(nextPresetId);
         this.currentPreset = JSON.parse(JSON.stringify(rawPreset));
 
-        await switchModelForLighting(this.currentPreset.id);
 
         this.lightingSystem.loadPreset(this.currentPreset);
-        this._renderCurrentLesson({ collapseControls: false, preserveSelection: false });
+        this._renderCurrentLesson({ collapseControls: this.controlsCollapsed, preserveSelection: false });
+        if (this._isMobileLayout()) {
+            this._setMobilePanel('teach', true);
+            this._setMobilePanel('controls', false);
+        }
         appEvents.emit('presetLoaded', this.currentPreset);
     }
 
     refreshCurrentLesson({ preserveSelection = true } = {}) {
-        this._renderCurrentLesson({ collapseControls: false, preserveSelection });
+        this._renderCurrentLesson({ collapseControls: this.controlsCollapsed, preserveSelection });
     }
 
     setLanguage(lang, { persist = true } = {}) {
@@ -141,7 +156,7 @@ export class UI {
         return localizePreset(this.currentPreset, this.lang);
     }
 
-    _renderCurrentLesson({ collapseControls = false, preserveSelection = false } = {}) {
+    _renderCurrentLesson({ collapseControls = this.controlsCollapsed, preserveSelection = false } = {}) {
         if (!this.currentPreset) return;
 
         const localizedPreset = this._getLocalizedCurrentPreset();
@@ -151,12 +166,12 @@ export class UI {
             : null;
 
         this.navigator.index = this.currentPresetIndex;
-        this.navigator.updateProgress(this.currentPresetIndex);
+        this.navigator.updateProgress(this.currentPresetIndex, this.completedLessonIds.size + 1);
         this.navigator.updateLessonHeader(localizedPreset, this.currentPresetIndex);
         this.navigator.updateGoalSection(localizedPreset);
         this.navigator.updatePracticeSection(localizedPreset);
         this.navigator.updateObserveSection(localizedPreset);
-        this.navigator.updateNavigation(this.currentPresetIndex);
+        this.navigator.updateNavigation(this.currentPresetIndex, this._getCompletedLessonIndexes());
 
         this.lightingSystem.loadPreset(this.currentPreset);
 
@@ -173,9 +188,7 @@ export class UI {
             if (container) clearChildren(container);
         }
 
-        if (collapseControls) {
-            document.getElementById('controls-panel')?.classList.add('collapsed');
-        }
+        this._applyControlsCollapsedState(Boolean(collapseControls), { persist: false });
 
         // Toggle sandbox toolbar visibility
         const toolbar = document.getElementById('sandbox-toolbar');
@@ -184,12 +197,7 @@ export class UI {
     }
 
     _collapseEmbedControls() {
-        const panel = document.getElementById('controls-panel');
-        const toggle = document.getElementById('controls-toggle');
-        if (!panel) return;
-
-        panel.classList.add('collapsed');
-        toggle?.setAttribute('aria-expanded', 'false');
+        this._applyControlsCollapsedState(true, { persist: false });
     }
 
     _updateDiagram() {
@@ -234,11 +242,21 @@ export class UI {
 
     _setupGeneralControls() {
         document.getElementById('controls-toggle')?.addEventListener('click', (e) => {
-            const panel = document.getElementById('controls-panel');
-            if (panel) {
-                panel.classList.toggle('collapsed');
-                e.currentTarget.setAttribute('aria-expanded', panel.classList.contains('collapsed') ? 'false' : 'true');
-            }
+            const next = !this.controlsCollapsed;
+            this._applyControlsCollapsedState(next);
+            e.currentTarget.setAttribute('aria-expanded', next ? 'false' : 'true');
+        });
+
+        document.getElementById('mobile-teach-toggle')?.addEventListener('click', () => {
+            const isOpen = this._isPanelOpen('teach');
+            this._setMobilePanel('teach', !isOpen);
+            this._setMobilePanel('controls', false);
+        });
+
+        document.getElementById('mobile-controls-toggle')?.addEventListener('click', () => {
+            const isOpen = this._isPanelOpen('controls');
+            this._setMobilePanel('controls', !isOpen);
+            this._setMobilePanel('teach', false);
         });
 
         document.getElementById('exposure')?.addEventListener('input', (e) => {
@@ -254,6 +272,15 @@ export class UI {
 
         document.getElementById('btn-help')?.addEventListener('click', () => {
             document.getElementById('onboarding')?.classList.remove('hidden');
+        });
+
+        appEvents.on('screenshotTaken', () => this._showToast('status.screenshotSaved'));
+        appEvents.on('screenshotFailed', () => this._showToast('status.screenshotFailed'));
+        appEvents.on('tipRestored', () => this._showToast('status.tipRestored'));
+        appEvents.on('escapeKey', () => {
+            document.getElementById('onboarding')?.classList.add('hidden');
+            this._setMobilePanel('teach', false);
+            this._setMobilePanel('controls', false);
         });
     }
 
@@ -351,6 +378,96 @@ export class UI {
             });
             container.appendChild(btn);
         });
+    }
+
+    _readControlsCollapsed() {
+        if (typeof localStorage === 'undefined') return false;
+        return localStorage.getItem(UI_STORAGE_KEYS.controlsCollapsed) === 'true';
+    }
+
+    _saveControlsCollapsed(value) {
+        if (typeof localStorage === 'undefined') return;
+        localStorage.setItem(UI_STORAGE_KEYS.controlsCollapsed, value ? 'true' : 'false');
+    }
+
+    _applyControlsCollapsedState(collapsed, { persist = true } = {}) {
+        this.controlsCollapsed = Boolean(collapsed);
+        const panel = document.getElementById('controls-panel');
+        const toggle = document.getElementById('controls-toggle');
+        panel?.classList.toggle('collapsed', this.controlsCollapsed);
+        toggle?.setAttribute('aria-expanded', this.controlsCollapsed ? 'false' : 'true');
+        if (persist) this._saveControlsCollapsed(this.controlsCollapsed);
+    }
+
+    _readCompletedLessons() {
+        if (typeof localStorage === 'undefined') return [];
+        try {
+            const raw = localStorage.getItem(UI_STORAGE_KEYS.completedLessons);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    _saveCompletedLessons() {
+        if (typeof localStorage === 'undefined') return;
+        localStorage.setItem(UI_STORAGE_KEYS.completedLessons, JSON.stringify([...this.completedLessonIds]));
+    }
+
+    _markLessonCompleted(lessonId) {
+        if (!lessonId || this.completedLessonIds.has(lessonId)) return;
+        this.completedLessonIds.add(lessonId);
+        this._saveCompletedLessons();
+        this._showToast('status.lessonCompleted');
+    }
+
+    _getCompletedLessonIndexes() {
+        const lessonIds = getPresetNames();
+        return lessonIds.reduce((indexes, id, index) => {
+            if (this.completedLessonIds.has(id)) indexes.push(index);
+            return indexes;
+        }, []);
+    }
+
+    _isMobileLayout() {
+        return typeof window !== 'undefined' && window.matchMedia('(max-width: 960px)').matches;
+    }
+
+    _isPanelOpen(panelName) {
+        const panel = document.getElementById(`${panelName}-panel`);
+        return panel?.classList.contains('open') || false;
+    }
+
+    _setMobilePanel(panelName, open) {
+        const panel = document.getElementById(`${panelName}-panel`);
+        const toggle = document.getElementById(`mobile-${panelName}-toggle`);
+        if (!panel) return;
+
+        panel.classList.toggle('open', Boolean(open));
+        toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    _syncMobilePanelButtons() {
+        ['teach', 'controls'].forEach((panelName) => {
+            const toggle = document.getElementById(`mobile-${panelName}-toggle`);
+            toggle?.setAttribute('aria-expanded', this._isPanelOpen(panelName) ? 'true' : 'false');
+        });
+    }
+
+    _showToast(messageKey) {
+        const el = document.getElementById('status-toast');
+        if (!el) return;
+
+        const localized = getAppCopy(this.lang);
+        const message = messageKey.split('.').reduce((acc, key) => acc?.[key], localized);
+        el.textContent = typeof message === 'string' ? message : messageKey;
+        el.classList.add('visible');
+
+        if (this._toastTimer) clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => {
+            el.classList.remove('visible');
+        }, 1800);
     }
 
     hideLoading() {

@@ -266,10 +266,6 @@ export function switchModel(modelId) {
     if (modelManager) modelManager.loadModel(modelId);
 }
 
-// kept for preset compatibility
-export function switchModelForLighting() {
-    return Promise.resolve();
-}
 
 
 export function createEnvironment(scene) {
@@ -336,7 +332,11 @@ export function getBackgroundPresets(lang = null) {
 export function setBackdropColor(scene, environment, colorHex) {
     const color = new Color(colorHex);
     scene.background = color;
-    scene.fog = new FogExp2(color, 0.04);
+    if (scene.fog && scene.fog.isFogExp2) {
+        scene.fog.color.set(color);
+    } else {
+        scene.fog = new FogExp2(color, 0.04);
+    }
     if (environment.backdrop) {
         environment.backdrop.material.color.set(color);
     }

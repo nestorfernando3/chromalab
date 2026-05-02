@@ -12,7 +12,9 @@ const COPY = {
             helpTitle: 'Ayuda',
             helpAria: 'Mostrar ayuda',
             screenshotTitle: 'Captura de pantalla',
-            screenshotAria: 'Tomar captura de pantalla'
+            screenshotAria: 'Tomar captura de pantalla',
+            lessonsToggle: 'Lecciones',
+            controlsToggle: 'Controles'
         },
         sections: {
             goal: 'Tu Objetivo',
@@ -50,7 +52,7 @@ const COPY = {
             remove: 'Eliminar luz'
         },
         tips: {
-            drag: 'Arrastra para rotar la vista • Usa los controles para cambiar colores'
+            drag: 'Arrastra para rotar la vista • Haz clic en una luz para editarla'
         },
         onboarding: {
             title: 'ChromaLab',
@@ -78,7 +80,7 @@ const COPY = {
             dragHint: 'Arrastra en 3D'
         },
         controls: {
-            dragIndicator: 'Ajusta matiz, saturación y luminosidad',
+            dragIndicator: 'Arrastra la luz o ajusta sus valores aquí',
             exposure: 'Exposición',
             closeTip: 'Cerrar tip'
         },
@@ -98,6 +100,12 @@ const COPY = {
             by: 'Desarrollado por',
             for: 'Para uso libre dentro de la'
         },
+        status: {
+            screenshotSaved: 'Captura guardada',
+            screenshotFailed: 'No se pudo guardar la captura',
+            tipRestored: 'Consejo visible de nuevo',
+            lessonCompleted: 'Lección marcada como completada'
+        },
         goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.'
     },
     en: {
@@ -111,7 +119,9 @@ const COPY = {
             helpTitle: 'Help',
             helpAria: 'Show help',
             screenshotTitle: 'Screenshot',
-            screenshotAria: 'Take a screenshot'
+            screenshotAria: 'Take a screenshot',
+            lessonsToggle: 'Lessons',
+            controlsToggle: 'Controls'
         },
         sections: {
             goal: 'Your Goal',
@@ -149,7 +159,7 @@ const COPY = {
             remove: 'Remove light'
         },
         tips: {
-            drag: 'Drag to rotate the view • Use controls to change colors'
+            drag: 'Drag to rotate the view • Click a light to edit it'
         },
         onboarding: {
             title: 'ChromaLab',
@@ -177,7 +187,7 @@ const COPY = {
             dragHint: 'Drag in 3D'
         },
         controls: {
-            dragIndicator: 'Adjust hue, saturation and lightness',
+            dragIndicator: 'Drag the light or adjust its values here',
             exposure: 'Exposure',
             closeTip: 'Close tip'
         },
@@ -196,6 +206,12 @@ const COPY = {
         footer: {
             by: 'Developed by',
             for: 'Free use within'
+        },
+        status: {
+            screenshotSaved: 'Screenshot saved',
+            screenshotFailed: 'Could not save screenshot',
+            tipRestored: 'Tip shown again',
+            lessonCompleted: 'Lesson marked complete'
         },
         goLabDescription: 'Interactive lab for learning color theory through chromatic exploration and 3D simulation.'
     }

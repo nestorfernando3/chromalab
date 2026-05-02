@@ -369,9 +369,13 @@ export class LightingSystem {
         const light = this.lightObjects.get(name);
         if (!light) return false;
 
-        // Remove light from scene
-        if (light.target) this.scene.remove(light.target);
+        // Dispose and remove light from scene
+        if (light.target) {
+            this.scene.remove(light.target);
+            if (typeof light.target.dispose === 'function') light.target.dispose();
+        }
         this.scene.remove(light);
+        if (typeof light.dispose === 'function') light.dispose();
 
         // Remove helpers
         const helperData = this.helperMap.get(name);
