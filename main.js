@@ -1,10 +1,11 @@
 import { Scene, Color, FogExp2, PerspectiveCamera, WebGLRenderer, PCFSoftShadowMap, ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createRoomScene, createEnvironment } from './src/model.js';
-import { ColorSystem } from './src/colorSystem.js';
+import { createPortraitModel, createEnvironment, setBackdropColor } from './src/model.js';
+import { LightingSystem } from './src/lighting.js';
 import { UI } from './src/ui.js';
 import { appEvents } from './src/utils/events.js';
 import { parseRuntimeConfig } from './src/runtime.js';
+import { getHarmonyColors } from './src/utils/color.js';
 
 const runtimeConfig = parseRuntimeConfig();
 document.documentElement.lang = runtimeConfig.language;
@@ -13,8 +14,8 @@ document.body.classList.toggle('embed-mode', runtimeConfig.embed);
 // Scene
 const canvas = document.getElementById('scene-canvas');
 const scene = new Scene();
-scene.background = new Color(0x2a2a3a);
-scene.fog = new FogExp2(0x2a2a3a, 0.03);
+scene.background = new Color(0x080810);
+scene.fog = new FogExp2(0x080810, 0.04);
 
 // Camera
 const camera = new PerspectiveCamera(
@@ -23,8 +24,8 @@ const camera = new PerspectiveCamera(
     0.1,
     100
 );
-camera.position.set(4, 3, 6);
-camera.lookAt(0, 1.5, 0);
+camera.position.set(2.5, 2.2, 5.5);
+camera.lookAt(0, 1.65, 0);
 
 // Renderer
 const renderer = new WebGLRenderer({
@@ -37,7 +38,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 renderer.toneMapping = ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMappingExposure = 1.5;
 renderer.outputColorSpace = SRGBColorSpace;
 
 // Orbit controls
@@ -45,10 +46,10 @@ const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.minDistance = 2.5;
-controls.maxDistance = 12;
-controls.maxPolarAngle = Math.PI / 2 + 0.1;
-controls.minPolarAngle = Math.PI / 6;
-controls.target.set(0, 1.5, 0);
+controls.maxDistance = 8;
+controls.maxPolarAngle = Math.PI / 2 + 0.15;
+controls.minPolarAngle = Math.PI / 5;
+controls.target.set(0, 1.65, 0);
 controls.enablePan = false;
 controls.update();
 
@@ -57,18 +58,20 @@ appEvents.on('resetControls', () => {
     requestRenderIfNotRequested();
 });
 
-// Create room scene and environment
-const roomGroup = createRoomScene(scene);
+// Create model and environment
+const model = createPortraitModel(scene);
 const environment = createEnvironment(scene);
 
-// Color system
-const colorSystem = new ColorSystem(scene, renderer);
+// Lighting system with drag support
+const lightingSystem = new LightingSystem(scene, camera, renderer);
+lightingSystem.setAmbientLight(environment.ambientLight);
 
 let renderRequested = false;
 
 function render() {
     renderRequested = false;
     controls.update();
+    lightingSystem.updateHelpers();
     renderer.render(scene, camera);
 }
 
@@ -88,11 +91,47 @@ appEvents.on('forceRenderSync', () => {
 
 controls.addEventListener('change', requestRenderIfNotRequested);
 
-// Wire up color system changes to trigger render
-colorSystem.onChange = requestRenderIfNotRequested;
+// Disable orbit controls when dragging lights
+lightingSystem.onLightDragStart = (lightName) => {
+    controls.enabled = false;
+    requestRenderIfNotRequested();
+};
 
-// UI
-const ui = new UI(colorSystem, scene, renderer, environment, runtimeConfig);
+lightingSystem.onLightDragEnd = (lightName) => {
+    controls.enabled = true;
+    requestRenderIfNotRequested();
+};
+
+// UI - pass lighting system for drag updates
+const ui = new UI(lightingSystem, scene, renderer, environment, runtimeConfig);
+
+appEvents.on('presetLoaded', (preset) => {
+    if (preset.baseHue === undefined || !preset.harmonyType) return;
+
+    const harmonies = getHarmonyColors(preset.baseHue, preset.harmonyType);
+    if (harmonies.length === 0) return;
+
+    setBackdropColor(scene, environment, harmonies[0]);
+
+    const keyConfig = preset.lights?.find(l => l.type === 'key');
+    const fillConfig = preset.lights?.find(l => l.type === 'fill');
+
+    if (keyConfig) {
+        lightingSystem.updateLightColor(keyConfig.id, harmonies[0]);
+    }
+    if (fillConfig && harmonies.length > 1) {
+        lightingSystem.updateLightColor(fillConfig.id, harmonies[1]);
+    }
+});
+
+// Connect drag events to UI updates
+lightingSystem.onLightDrag = (lightName, position) => {
+    ui.onLightDragged(lightName, position);
+    requestRenderIfNotRequested();
+};
+
+// Wire up light system changes to trigger render
+lightingSystem.onChange = requestRenderIfNotRequested;
 
 // Resize handler
 let resizeTimeout;
@@ -125,6 +164,6 @@ requestRenderIfNotRequested();
 if (import.meta.env.DEV) {
     window.scene = scene;
     window.camera = camera;
-    window.colorSystem = colorSystem;
+    window.lightingSystem = lightingSystem;
     window.renderer = renderer;
 }

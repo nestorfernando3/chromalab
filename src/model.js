@@ -1,212 +1,347 @@
-import {
-    Group, MeshStandardMaterial, Mesh, BoxGeometry, PlaneGeometry, Color,
-    AmbientLight, DirectionalLight, FogExp2, CylinderGeometry, SphereGeometry
-} from 'three';
+import { Group, MeshStandardMaterial, Mesh, CylinderGeometry, SphereGeometry, Color, BackSide, CircleGeometry, AmbientLight, FogExp2, Vector2 } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { appEvents } from './utils/events.js';
+import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
 
-// ====== Scene object registry ======
-export const SCENE_REGISTRY = [
+// ====== Model registry — add more GLB models here ======
+export const MODEL_REGISTRY = [
     {
-        id: 'wallMain',
-        name: { es: 'Pared Principal', en: 'Main Wall' },
-        type: 'wall',
-        position: { x: 0, y: 2.5, z: -3 },
-        size: { w: 6, h: 5, d: 0.2 }
+        id: 'head',
+        name: { es: 'Rostro Humano', en: 'Human Face' },
+        icon: '🧑',
+        path: './models/head.glb',
+        scale: 0.26,
+        positionY: 1.6,
+        skinColor: 0xd4a574,
+        hideBase: false,
+        preserveMaterial: false,
+        description: { es: 'Modelo escaneo 3D de rostro humano', en: '3D scanned human face model' }
     },
     {
-        id: 'wallLeft',
-        name: { es: 'Pared Lateral', en: 'Side Wall' },
-        type: 'wall',
-        position: { x: -3, y: 2.5, z: 0 },
-        size: { w: 0.2, h: 5, d: 6 }
+        id: 'marble_bust',
+        name: { es: 'Busto Mármol', en: 'Marble Bust' },
+        icon: '🏛️',
+        path: './models/marble_bust_01/marble_bust_01_1k.gltf',
+        scale: 4.0,
+        positionY: 0.0,
+        hideBase: true,
+        preserveMaterial: true,
+        description: { es: 'Busto clásico de mármol — Poly Haven CC0', en: 'Classic marble bust - Poly Haven CC0' }
     },
     {
-        id: 'floor',
-        name: { es: 'Piso', en: 'Floor' },
-        type: 'floor',
-        position: { x: 0, y: 0, z: 0 },
-        size: { w: 6, h: 0.1, d: 6 }
+        id: 'nefertiti',
+        name: { es: 'Nefertiti', en: 'Nefertiti' },
+        icon: '👑',
+        path: './models/female_head.glb',
+        scale: 0.07,
+        positionY: 0.25,
+        hideBase: true,
+        preserveMaterial: true,
+        materialBoost: true,
+        description: { es: 'Busto de Nefertiti', en: 'Nefertiti bust' }
     },
     {
-        id: 'sofa',
-        name: { es: 'Sofá', en: 'Sofa' },
-        type: 'furniture',
-        position: { x: 0, y: 0.5, z: -1.5 },
-        size: { w: 2.5, h: 1.0, d: 1.0 }
+        id: 'croissant',
+        name: { es: 'Croissant', en: 'Croissant' },
+        icon: '🥐',
+        path: './models/croissant/croissant_1k.gltf',
+        scale: 12.0,
+        positionY: 1.05,
+        hideBase: false,
+        preserveMaterial: true,
+        description: { es: 'Croissant — iluminación de producto / Poly Haven CC0', en: 'Croissant - product lighting / Poly Haven CC0' }
     },
     {
-        id: 'table',
-        name: { es: 'Mesa', en: 'Table' },
-        type: 'furniture',
-        position: { x: 1.2, y: 0.4, z: 0.5 },
-        size: { w: 1.0, h: 0.8, d: 0.6 }
-    },
-    {
-        id: 'lamp',
-        name: { es: 'Lámpara', en: 'Lamp' },
-        type: 'accent',
-        position: { x: -1.5, y: 0.6, z: 0.8 },
-        size: { w: 0.4, h: 1.2, d: 0.4 }
-    },
-    {
-        id: 'picture',
-        name: { es: 'Cuadro', en: 'Picture' },
-        type: 'accent',
-        position: { x: 0.5, y: 2.2, z: -2.85 },
-        size: { w: 1.2, h: 0.8, d: 0.05 }
+        id: 'duck',
+        name: { es: 'Pato de Goma', en: 'Rubber Duck' },
+        icon: '🦆',
+        path: './models/rubber_duck_toy/rubber_duck_toy_1k.gltf',
+        scale: 4.5,
+        positionY: 1.05,
+        hideBase: false,
+        preserveMaterial: true,
+        description: { es: 'Pato de goma — iluminación de producto / Poly Haven CC0', en: 'Rubber duck - product lighting / Poly Haven CC0' }
     }
 ];
 
-let sceneObjects = new Map();
-let environment = null;
+const matNormalScale = new Vector2(0.8, 0.8);
 
-/**
- * Create a simple room scene with colored objects
- * @param {THREE.Scene} scene
- * @returns {Group} the room group
- */
-export function createRoomScene(scene) {
-    const roomGroup = new Group();
-    sceneObjects.clear();
+function localizeValue(value, lang) {
+    const normalized = normalizeLanguage(lang);
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return value[normalized] || value[DEFAULT_LANGUAGE] || value.en || value.es || value;
+    }
+    return value;
+}
 
-    // Default material factory
-    function makeMat(color = 0x888888) {
-        return new MeshStandardMaterial({
-            color,
-            roughness: 0.7,
-            metalness: 0.05
+function localizeModelEntry(model, lang) {
+    return {
+        ...model,
+        name: localizeValue(model.name, lang),
+        description: localizeValue(model.description, lang)
+    };
+}
+
+export function getModelRegistry(lang = null) {
+    return lang ? MODEL_REGISTRY.map(model => localizeModelEntry(model, lang)) : MODEL_REGISTRY;
+}
+
+
+class ModelManager {
+    constructor(scene) {
+        this.scene = scene;
+        this.loader = new GLTFLoader();
+        this.modelGroup = new Group();
+        this.currentHead = null;
+        this.currentModelId = null;
+        this.isLoading = false;
+        this.baseDisk = null;
+        this.bustCylinder = null;
+
+        this.scene.add(this.modelGroup);
+        this.createBase();
+        this.loadModel('head');
+    }
+
+    createBase() {
+        const baseMat = new MeshStandardMaterial({
+            color: 0x1a1a2e,
+            roughness: 0.9,
+            metalness: 0.1
         });
+        this.baseDisk = new Mesh(
+            new CylinderGeometry(0.6, 0.7, 0.25, 32),
+            baseMat
+        );
+        this.baseDisk.position.y = 0.125;
+        this.baseDisk.receiveShadow = true;
+        this.modelGroup.add(this.baseDisk);
+
+        const bustMat = new MeshStandardMaterial({
+            color: 0x2c3e50,
+            roughness: 0.7,
+            metalness: 0.1
+        });
+        this.bustCylinder = new Mesh(
+            new CylinderGeometry(0.35, 0.5, 0.8, 24),
+            bustMat
+        );
+        this.bustCylinder.position.y = 0.65;
+        this.bustCylinder.castShadow = true;
+        this.bustCylinder.receiveShadow = true;
+        this.modelGroup.add(this.bustCylinder);
+
+        this.modelGroup.rotation.y = Math.PI / 16;
     }
 
-    // Create each object from registry
-    for (const obj of SCENE_REGISTRY) {
-        const geo = new BoxGeometry(obj.size.w, obj.size.h, obj.size.d);
-        const mat = makeMat(0x888888);
-        const mesh = new Mesh(geo, mat);
-        mesh.position.set(obj.position.x, obj.position.y, obj.position.z);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        mesh.name = obj.id;
-        mesh.userData = { ...obj };
+    loadModel(modelId) {
+        const config = MODEL_REGISTRY.find(m => m.id === modelId);
+        if (!config || this.isLoading || modelId === this.currentModelId) return;
 
-        roomGroup.add(mesh);
-        sceneObjects.set(obj.id, { mesh, material: mat, config: obj });
+        this.isLoading = true;
+        this.currentModelId = modelId;
+
+        if (this.bustCylinder) this.bustCylinder.visible = !config.hideBase;
+        if (this.baseDisk) this.baseDisk.visible = !config.hideBase;
+
+        const loading = document.getElementById('loading');
+        if (loading) loading.classList.remove('hidden');
+
+        if (this.currentHead) {
+            this.modelGroup.remove(this.currentHead);
+            this.currentHead.traverse(child => {
+                child.geometry?.dispose();
+                if (child.material) {
+                    (Array.isArray(child.material) ? child.material : [child.material])
+                        .forEach(m => m.dispose());
+                }
+            });
+            this.currentHead = null;
+        }
+
+        // Placeholder wireframe while loading
+        const placeholder = new Mesh(
+            new SphereGeometry(0.4, 16, 16),
+            new MeshStandardMaterial({ color: 0x444455, wireframe: true })
+        );
+        placeholder.position.y = config.positionY;
+        placeholder.name = 'placeholder';
+        this.modelGroup.add(placeholder);
+
+        this.loader.load(
+            config.path,
+            (gltf) => {
+                const head = gltf.scene;
+
+                const ph = this.modelGroup.getObjectByName('placeholder');
+                if (ph) {
+                    this.modelGroup.remove(ph);
+                    if (ph.geometry) ph.geometry.dispose();
+                    if (ph.material) ph.material.dispose();
+                }
+
+                head.scale.set(config.scale, config.scale, config.scale);
+                head.position.set(0, config.positionY, 0);
+                head.rotation.y = 0;
+
+                head.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+
+                        if (!config.preserveMaterial) {
+                            const orig = child.material;
+                            child.material = new MeshStandardMaterial({
+                                color: config.skinColor,
+                                roughness: 0.5,
+                                metalness: 0.0,
+                                map: orig?.map || null,
+                                normalMap: orig?.normalMap || null,
+                                normalScale: matNormalScale
+                            });
+                        } else if (config.materialBoost) {
+                            // Universal brightness boost — works on any material type
+                            const mats = Array.isArray(child.material)
+                                ? child.material : [child.material];
+                            mats.forEach(mat => {
+                                if (!mat) return;
+                                // Force roughness down for more light reflection
+                                if ('roughness' in mat) mat.roughness = 0.25;
+                                // Add emissive if supported
+                                if ('emissive' in mat) {
+                                    mat.emissive = new Color(0x261808);
+                                    mat.emissiveIntensity = 0.6;
+                                }
+                                // Boost all diffuse colors by lightening
+                                if ('color' in mat && mat.color) {
+                                    mat.color.multiplyScalar(1.4);
+                                }
+                                mat.needsUpdate = true;
+                            });
+                        }
+                    }
+                });
+
+                this.modelGroup.add(head);
+                this.currentHead = head;
+                this.isLoading = false;
+
+                if (loading) loading.classList.add('hidden');
+                appEvents.emit('requestRender');
+            },
+            null,
+            (error) => {
+                console.error('Error loading model:', error);
+                this.isLoading = false;
+                const ph = this.modelGroup.getObjectByName('placeholder');
+                if (ph) {
+                    this.modelGroup.remove(ph);
+                    if (ph.geometry) ph.geometry.dispose();
+                    if (ph.material) ph.material.dispose();
+                }
+                if (loading) loading.classList.add('hidden');
+            }
+        );
     }
 
-    scene.add(roomGroup);
-    return roomGroup;
-}
-
-/**
- * Get all scene objects
- * @returns {Map<string, {mesh: THREE.Mesh, material: THREE.MeshStandardMaterial, config: Object}>}
- */
-export function getSceneObjects() {
-    return sceneObjects;
-}
-
-/**
- * Apply color to a scene object
- * @param {string} objectId
- * @param {string|number} color hex string or integer
- */
-export function setObjectColor(objectId, color) {
-    const entry = sceneObjects.get(objectId);
-    if (entry && entry.material) {
-        entry.material.color.set(color);
-        appEvents.emit('requestRender');
+    getModelGroup() {
+        return this.modelGroup;
     }
 }
 
-/**
- * Apply a palette (array of colors) to multiple objects
- * @param {string[]} objectIds
- * @param {string[]} colors
- */
-export function applyPalette(objectIds, colors) {
-    objectIds.forEach((id, i) => {
-        if (colors[i]) setObjectColor(id, colors[i]);
-    });
+
+// Singleton
+let modelManager = null;
+
+export function createPortraitModel(scene) {
+    modelManager = new ModelManager(scene);
+    return modelManager.getModelGroup();
 }
 
-/**
- * Reset all objects to default gray
- */
-export function resetColors() {
-    for (const entry of sceneObjects.values()) {
-        if (entry.material) entry.material.color.set(0x888888);
-    }
-    appEvents.emit('requestRender');
+export function getModelManager() {
+    return modelManager;
 }
 
-/**
- * Create the 3D environment (backdrop, ground, lights)
- * @param {THREE.Scene} scene
- * @returns {{ground: THREE.Mesh, backdrop: THREE.Mesh, ambientLight: THREE.AmbientLight, directionalLight: THREE.DirectionalLight}}
- */
+export function switchModel(modelId) {
+    if (modelManager) modelManager.loadModel(modelId);
+}
+
+// kept for preset compatibility
+export function switchModelForLighting() {
+    return Promise.resolve();
+}
+
+
 export function createEnvironment(scene) {
-    const defaultColor = 0x2a2a3a;
+    // Basic settings for gray backdrop
+    const defaultColor = 0x737373; // Gris 18%
+    const envRoughness = 0.98;
 
-    // Back wall
-    const backGeo = new PlaneGeometry(12, 8);
-    const backMat = new MeshStandardMaterial({ color: defaultColor, roughness: 0.9 });
-    const backdrop = new Mesh(backGeo, backMat);
-    backdrop.position.set(0, 3, -4);
+    // Smooth Photography Cyc Wall (curved backdrop)
+    // We create a curved plane using CylinderGeometry (inside out)
+    const cycGeo = new CylinderGeometry(15, 15, 20, 48, 1, true, Math.PI * 0.5, Math.PI);
+    const cycMat = new MeshStandardMaterial({
+        color: defaultColor,
+        roughness: envRoughness,
+        metalness: 0.05,
+        side: BackSide // Render the inside of the cylinder
+    });
+
+    const backdrop = new Mesh(cycGeo, cycMat);
+    // Position it so the back of the cylinder is behind the camera target
+    // and the floor of the cylinder is almost at y=0, then we blend it with the ground
+    backdrop.position.set(0, 5, 5);
     backdrop.receiveShadow = true;
     scene.add(backdrop);
 
-    // Ground
-    const groundGeo = new PlaneGeometry(12, 12);
-    const groundMat = new MeshStandardMaterial({ color: defaultColor, roughness: 0.9 });
+    // Ground (seamless with cyc wall)
+    const groundGeo = new CircleGeometry(15, 64);
+    const groundMat = new MeshStandardMaterial({
+        color: defaultColor,
+        roughness: envRoughness,
+        metalness: 0.05
+    });
     const ground = new Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.05;
+    ground.position.y = 0;
     ground.receiveShadow = true;
     scene.add(ground);
 
     // Ambient light
-    const ambientLight = new AmbientLight(0xffffff, 0.4);
+    const ambientLight = new AmbientLight(0x404060, 0.5);
     scene.add(ambientLight);
 
-    // Directional "sun" light
-    const directionalLight = new DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(3, 6, 4);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    scene.add(directionalLight);
-
-    environment = { ground, backdrop, ambientLight, directionalLight };
-    return environment;
+    return { ground, backdrop, ambientLight };
 }
 
-// Background presets
+// Background color presets for color testing
 export const BACKGROUND_PRESETS = [
     { name: { es: 'Negro', en: 'Black' }, color: '#080810' },
-    { name: { es: 'Gris Oscuro', en: 'Dark Gray' }, color: '#2a2a3a' },
+    { name: { es: 'Gris 18%', en: '18% Gray' }, color: '#737373' },
     { name: { es: 'Blanco', en: 'White' }, color: '#e0e0e0' },
-    { name: { es: 'Crema', en: 'Cream' }, color: '#f5f0e0' },
-    { name: { es: 'Azul Noche', en: 'Night Blue' }, color: '#1a2a4a' },
-    { name: { es: 'Verde Bosque', en: 'Forest Green' }, color: '#1a3a2a' }
+    { name: { es: 'Azul', en: 'Blue' }, color: '#1a3a5c' },
+    { name: { es: 'Verde', en: 'Green' }, color: '#1a4a2a' },
+    { name: { es: 'Rojo', en: 'Red' }, color: '#5c1a1a' }
 ];
 
 export function getBackgroundPresets(lang = null) {
     if (!lang) return BACKGROUND_PRESETS;
-    return BACKGROUND_PRESETS.map(p => ({
-        ...p,
-        name: p.name[lang] || p.name.es
+    return BACKGROUND_PRESETS.map(preset => ({
+        ...preset,
+        name: localizeValue(preset.name, lang)
     }));
 }
 
-export function setBackdropColor(scene, env, colorHex) {
+// Change backdrop and scene background color
+export function setBackdropColor(scene, environment, colorHex) {
     const color = new Color(colorHex);
     scene.background = color;
-    scene.fog = new FogExp2(color, 0.03);
-    if (env?.backdrop) env.backdrop.material.color.set(color);
-    if (env?.ground) env.ground.material.color.set(color);
+    scene.fog = new FogExp2(color, 0.04);
+    if (environment.backdrop) {
+        environment.backdrop.material.color.set(color);
+    }
+    if (environment.ground) {
+        environment.ground.material.color.set(color);
+    }
     appEvents.emit('requestRender');
-}
-
-export function getBackgroundPresetsRaw() {
-    return BACKGROUND_PRESETS;
 }

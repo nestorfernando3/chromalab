@@ -2,25 +2,27 @@
  * UI — Thin orchestrator that wires together all UI sub-modules.
  *
  * Modules:
- *  - LessonNavigator     → lesson progression, dots, progress, keyboard
- *  - HarmonyControls     → harmony selection, HSL sliders
- *  - ScreenshotExporter  → PNG download
+ *  - LessonNavigator   → lesson progression, dots, progress, keyboard
+ *  - LightControls     → light selection, sliders, color pickers
+ *  - SandboxManager    → free-mode add/remove lights
+ *  - ScreenshotExporter → PNG download
  */
 import { getPresetNames, getPreset, localizePreset } from './presets.js';
-import { setBackdropColor, getBackgroundPresets, applyPalette } from './model.js';
+import { switchModelForLighting, switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
 import { setupOnboarding } from './onboarding.js';
 import { renderDiagram } from './diagram.js';
 import { clearChildren } from './utils/dom.js';
 import { LessonNavigator } from './ui/LessonNavigator.js';
-import { HarmonyControls } from './ui/HarmonyControls.js';
+import { LightControls } from './ui/LightControls.js';
 import { appEvents } from './utils/events.js';
+import { SandboxManager } from './ui/SandboxManager.js';
 import { ScreenshotExporter } from './ui/ScreenshotExporter.js';
 import { applyStaticTranslations } from './localization.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage, storeLanguage } from './runtime.js';
 
 export class UI {
-    constructor(colorSystem, scene, renderer, environment, options = {}) {
-        this.colorSystem = colorSystem;
+    constructor(lightingSystem, scene, renderer, environment, options = {}) {
+        this.lightingSystem = lightingSystem;
         this.scene = scene;
         this.renderer = renderer;
         this.environment = environment;
@@ -29,7 +31,8 @@ export class UI {
         this.lang = normalizeLanguage(options.language || DEFAULT_LANGUAGE);
         this.currentPreset = null;
         this.currentPresetIndex = 0;
-        this.activeBackgroundColor = getBackgroundPresets().at(0)?.color || '#2a2a3a';
+        this.activeModelId = getModelRegistry().at(0)?.id || 'head';
+        this.activeBackgroundColor = getBackgroundPresets().at(0)?.color || '#080810';
         this._bgCustomColorInput = null;
         this._bgCustomColorHandler = null;
 
@@ -39,11 +42,23 @@ export class UI {
 
         this.navigator = new LessonNavigator(presetNames, (index) => this.loadLesson(index));
 
-        this.harmonyControls = new HarmonyControls(
-            colorSystem,
+        this.lightControls = new LightControls(
+            lightingSystem,
             () => this.currentPreset,
             () => this.lang,
             () => this._updateDiagram()
+        );
+
+        // Wire duplicate-light callback — push already done in LightControls._bindControlEvents
+        this.lightControls._onDupLight = (newConfig) => {
+            this._onSandboxChange(newConfig);
+        };
+
+        this.sandboxManager = new SandboxManager(
+            lightingSystem,
+            () => this.currentPreset,
+            () => this.lang,
+            (newConfig) => this._onSandboxChange(newConfig)
         );
 
         this.screenshotExporter = new ScreenshotExporter(
@@ -56,6 +71,7 @@ export class UI {
         this._setupGeneralControls();
         this._setupLanguageSwitch();
         this._renderBackgroundControls();
+        this._renderModelSelector();
 
         setupOnboarding(() => this.loadInitialLesson(), { skipAutoStart: this.embedMode });
         if (this.embedMode) {
@@ -87,8 +103,11 @@ export class UI {
         const rawPreset = getPreset(presetName);
         this.currentPreset = JSON.parse(JSON.stringify(rawPreset));
 
-        this.colorSystem.loadPreset(this.currentPreset);
-        this._renderCurrentLesson({ collapseControls: true });
+        await switchModelForLighting(this.currentPreset.id);
+
+        this.lightingSystem.loadPreset(this.currentPreset);
+        this._renderCurrentLesson({ collapseControls: true, preserveSelection: false });
+        appEvents.emit('presetLoaded', this.currentPreset);
     }
 
     refreshCurrentLesson({ preserveSelection = true } = {}) {
@@ -105,7 +124,14 @@ export class UI {
         applyStaticTranslations(this.lang);
         this._updateLanguageSwitch();
         this._renderBackgroundControls();
+        this._renderModelSelector();
         this.refreshCurrentLesson({ preserveSelection: true });
+    }
+
+    // ── Light drag feedback (called from main.js) ─────────────────────────────
+
+    onLightDragged(lightId, position) {
+        this.lightControls.onLightDragged(lightId, position);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -115,10 +141,14 @@ export class UI {
         return localizePreset(this.currentPreset, this.lang);
     }
 
-    _renderCurrentLesson({ collapseControls = false, preserveSelection = true } = {}) {
+    _renderCurrentLesson({ collapseControls = false, preserveSelection = false } = {}) {
         if (!this.currentPreset) return;
 
         const localizedPreset = this._getLocalizedCurrentPreset();
+        const selectedLightId = preserveSelection ? this.lightControls.selectedLightId : null;
+        const selectedLight = selectedLightId
+            ? localizedPreset.lights.find(light => light.id === selectedLightId)
+            : null;
 
         this.navigator.index = this.currentPresetIndex;
         this.navigator.updateProgress(this.currentPresetIndex);
@@ -128,23 +158,29 @@ export class UI {
         this.navigator.updateObserveSection(localizedPreset);
         this.navigator.updateNavigation(this.currentPresetIndex);
 
-        this.colorSystem.loadPreset(this.currentPreset);
-        this._applyPaletteToScene();
-        this._updateDiagram();
+        this.lightingSystem.loadPreset(this.currentPreset);
 
-        if (this.harmonyControls && typeof this.harmonyControls.render === 'function') {
-            this.harmonyControls.render(localizedPreset);
+        this._updateDiagram();
+        this._updateLightsOverview();
+
+        if (selectedLight) {
+            this.lightControls.selectLight(selectedLight);
+        } else {
+            this.lightControls.renderLightSelector(localizedPreset, null);
+            this.lightControls.selectedLightId = null;
+            document.getElementById('drag-indicator')?.classList.add('hidden');
+            const container = document.getElementById('light-controls');
+            if (container) clearChildren(container);
         }
 
         if (collapseControls) {
             document.getElementById('controls-panel')?.classList.add('collapsed');
         }
-    }
 
-    _applyPaletteToScene() {
-        const colors = this.colorSystem.getColors();
-        const objectIds = ['wallMain', 'sofa', 'table', 'lamp', 'picture', 'wallLeft'];
-        applyPalette(objectIds, colors);
+        // Toggle sandbox toolbar visibility
+        const toolbar = document.getElementById('sandbox-toolbar');
+        if (toolbar) toolbar.classList.toggle('hidden', !this.currentPreset.isSandbox);
+        this.sandboxManager.setupSandboxButtons();
     }
 
     _collapseEmbedControls() {
@@ -159,8 +195,41 @@ export class UI {
     _updateDiagram() {
         const svg = document.getElementById('lighting-diagram');
         if (!svg || !this.currentPreset) return;
-        const preset = this._getLocalizedCurrentPreset();
-        renderDiagram(preset, svg, this.lang);
+        renderDiagram(this._getLocalizedCurrentPreset(), svg, this.lang);
+    }
+
+    _updateLightsOverview() {
+        if (!this.currentPreset) return;
+        this.sandboxManager.renderLightsOverview(
+            (light) => this.lightControls.selectLight(light),
+            this.currentPreset?.isSandbox
+        );
+    }
+
+    _onSandboxChange(newConfig) {
+        if (!this.currentPreset) return;
+
+        this._updateLightsOverview();
+        this._updateDiagram();
+
+        const localizedPreset = this._getLocalizedCurrentPreset();
+        const selectedId = newConfig?.id || this.lightControls.selectedLightId;
+        this.lightControls.renderLightSelector(localizedPreset, selectedId);
+
+        if (newConfig) {
+            const localizedLight = localizedPreset.lights.find(light => light.id === newConfig.id);
+            if (localizedLight) {
+                this.lightControls.selectLight(localizedLight);
+            }
+        } else {
+            const stillExists = localizedPreset.lights.some(light => light.id === this.lightControls.selectedLightId);
+            if (!stillExists) {
+                this.lightControls.selectedLightId = null;
+                document.getElementById('drag-indicator')?.classList.add('hidden');
+                const container = document.getElementById('light-controls');
+                if (container) clearChildren(container);
+            }
+        }
     }
 
     _setupGeneralControls() {
@@ -247,6 +316,41 @@ export class UI {
             customInput.addEventListener('input', this._bgCustomColorHandler);
             this._bgCustomColorInput = customInput;
         }
+    }
+
+    _renderModelSelector() {
+        const container = document.getElementById('model-selector');
+        if (!container) return;
+
+        clearChildren(container);
+        const models = getModelRegistry(this.lang);
+
+        models.forEach((model) => {
+            const btn = document.createElement('button');
+            btn.className = 'model-card' + (model.id === this.activeModelId ? ' active' : '');
+            btn.dataset.modelId = model.id;
+            btn.title = model.description;
+            btn.setAttribute('aria-label', model.name);
+
+            const iconEl = document.createElement('span');
+            iconEl.className = 'model-icon';
+            iconEl.textContent = model.icon;
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'model-name';
+            nameEl.textContent = model.name;
+
+            btn.appendChild(iconEl);
+            btn.appendChild(nameEl);
+
+            btn.addEventListener('click', () => {
+                this.activeModelId = model.id;
+                switchModel(model.id);
+                container.querySelectorAll('.model-card').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+            });
+            container.appendChild(btn);
+        });
     }
 
     hideLoading() {

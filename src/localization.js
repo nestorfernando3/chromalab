@@ -3,11 +3,11 @@ import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
 const COPY = {
     es: {
         page: {
-            title: 'ChromaLab',
-            description: 'Aprende teoría del color de forma interactiva. Explora armonías cromáticas y experimenta con matiz, saturación y luminosidad.'
+            title: 'Light Studio 3D - UPCA',
+            description: 'Aprende iluminación fotográfica de forma interactiva. Software educativo de la Corporación Universitaria Politécnico de la Costa.'
         },
         header: {
-            subtitle: 'Teoría del Color',
+            subtitle: 'Iluminación Fotográfica',
             languageLabel: 'Idioma',
             helpTitle: 'Ayuda',
             helpAria: 'Mostrar ayuda',
@@ -18,15 +18,15 @@ const COPY = {
             goal: 'Tu Objetivo',
             observe: 'Qué Observar',
             practice: 'Práctica',
-            diagram: 'Diagrama',
-            lights: 'Colores en Escena',
-            selectedLight: 'Armonía',
-            harmony: 'Armonía',
+            diagram: 'Vista Superior',
+            lights: 'Luces en Escena',
+            selectedLight: 'Luz Seleccionada',
             ambient: 'Ambiente',
             background: 'Fondo',
             custom: 'Personalizado',
             model: 'Modelo',
-            controls: 'Controles'
+            controls: 'Controles',
+            addLight: 'Agregar Luz'
         },
         practice: {
             task: 'Tarea',
@@ -34,11 +34,11 @@ const COPY = {
         },
         overview: {
             title: 'Sobre este laboratorio',
-            description: 'ChromaLab es un laboratorio virtual para aprender teoría del color mediante exploración interactiva.',
+            description: 'Light Studio 3D es un laboratorio web 3D para aprender iluminación fotográfica mediante metas guiadas, observación comparativa y práctica virtual-a-real.',
             points: [
-                'Explora armonías cromáticas antes de aplicarlas al diseño real.',
+                'Explora setups clásicos antes de pasar al estudio físico.',
                 'Usa objetivos breves y tareas concretas para enfocar la práctica.',
-                'Experimenta con matiz, saturación y luminosidad para entender el color.'
+                'Compara la escena 3D con una réplica real para consolidar el aprendizaje.'
             ]
         },
         buttons: {
@@ -46,24 +46,24 @@ const COPY = {
             next: 'Siguiente',
             start: 'Comenzar',
             reset: 'Resetear Posición',
-            duplicate: 'Duplicar',
-            remove: 'Eliminar'
+            duplicate: 'Duplicar luz',
+            remove: 'Eliminar luz'
         },
         tips: {
-            drag: 'Arrastra para rotar la vista • Usa los controles para explorar armonías'
+            drag: 'Arrastra para rotar la vista • Click en luz para moverla'
         },
         onboarding: {
-            title: 'ChromaLab',
-            subtitle: 'Laboratorio Interactivo de Teoría del Color',
-            intro: 'Aprende teoría del color de forma interactiva. Explora armonías cromáticas en una habitación 3D.',
+            title: 'Light Studio 3D',
+            subtitle: 'Corporación Universitaria Politécnico de la Costa',
+            intro: 'Aprende iluminación fotográfica de forma interactiva. Visualiza en 3D cómo diferentes setups de luz afectan a un retrato.',
             hint: 'Usa ← → para navegar entre lecciones'
         },
         features: [
-            { label: '8 Lecciones' },
+            { label: '8 Técnicas' },
             { label: 'Interactivo' },
             { label: 'Educativo' }
         ],
-        loader: 'Preparando el laboratorio...',
+        loader: 'Preparando el estudio...',
         sandbox: {
             addSpot: 'Spot',
             addPoint: 'Point',
@@ -78,7 +78,7 @@ const COPY = {
             dragHint: 'Arrastra en 3D'
         },
         controls: {
-            dragIndicator: 'Ajusta matiz, saturación y luminosidad para cambiar los colores',
+            dragIndicator: 'Arrastra la luz en la escena 3D',
             exposure: 'Exposición',
             closeTip: 'Cerrar tip'
         },
@@ -92,21 +92,21 @@ const COPY = {
             width: 'Ancho',
             height: 'Alto',
             reset: 'Resetear Posición',
-            duplicate: 'Duplicar'
+            duplicate: 'Duplicar luz'
         },
         footer: {
             by: 'Desarrollado por',
             for: 'Para uso libre dentro de la'
         },
-        goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante lecciones guiadas, exploración de armonías cromáticas y práctica visual.'
+        goLabDescription: 'Laboratorio web 3D para aprender iluminación fotográfica con metas guiadas, observación comparativa y práctica virtual-a-real.'
     },
     en: {
         page: {
-            title: 'ChromaLab',
-            description: 'Learn color theory interactively. Explore color harmonies and experiment with hue, saturation, and lightness.'
+            title: 'Light Studio 3D - UPCA',
+            description: 'Interactive way to learn photographic lighting. Educational software from Corporacion Universitaria Politecnico de la Costa.'
         },
         header: {
-            subtitle: 'Color Theory',
+            subtitle: 'Photographic Lighting',
             languageLabel: 'Language',
             helpTitle: 'Help',
             helpAria: 'Show help',
@@ -117,15 +117,15 @@ const COPY = {
             goal: 'Your Goal',
             observe: 'What to Observe',
             practice: 'Practice',
-            diagram: 'Diagram',
-            lights: 'Colors in Scene',
-            selectedLight: 'Harmony',
-            harmony: 'Harmony',
+            diagram: 'Top View',
+            lights: 'Lights in Scene',
+            selectedLight: 'Selected Light',
             ambient: 'Ambient',
             background: 'Background',
             custom: 'Custom',
             model: 'Model',
-            controls: 'Controls'
+            controls: 'Controls',
+            addLight: 'Add Light'
         },
         practice: {
             task: 'Task',
@@ -133,11 +133,11 @@ const COPY = {
         },
         overview: {
             title: 'About this lab',
-            description: 'ChromaLab is a virtual lab for learning color theory through interactive exploration.',
+            description: 'Light Studio 3D is a browser-based 3D lab for learning photographic lighting through guided goals, comparative observation, and virtual-to-real practice.',
             points: [
-                'Explore chromatic harmonies before applying them to real design.',
-                'Use short goals and concrete tasks to focus your practice.',
-                'Experiment with hue, saturation, and lightness to understand color.'
+                'Explore classic setups before moving into the physical studio.',
+                'Use short goals and concrete tasks to focus student work.',
+                'Compare the 3D scene with a real-world replica to reinforce learning.'
             ]
         },
         buttons: {
@@ -145,24 +145,24 @@ const COPY = {
             next: 'Next',
             start: 'Start',
             reset: 'Reset Position',
-            duplicate: 'Duplicate',
-            remove: 'Remove'
+            duplicate: 'Duplicate light',
+            remove: 'Remove light'
         },
         tips: {
-            drag: 'Drag to rotate view • Use controls to explore harmonies'
+            drag: 'Drag to rotate the view • Click a light to move it'
         },
         onboarding: {
-            title: 'ChromaLab',
-            subtitle: 'Interactive Color Theory Lab',
-            intro: 'Learn color theory interactively. Explore chromatic harmonies in a 3D room.',
+            title: 'Light Studio 3D',
+            subtitle: 'Corporacion Universitaria Politecnico de la Costa',
+            intro: 'Learn photographic lighting interactively. Visualize in 3D how different light setups affect a portrait.',
             hint: 'Use ← → to move between lessons'
         },
         features: [
-            { label: '8 Lessons' },
+            { label: '8 Techniques' },
             { label: 'Interactive' },
             { label: 'Educational' }
         ],
-        loader: 'Preparing the lab...',
+        loader: 'Preparing the studio...',
         sandbox: {
             addSpot: 'Spot',
             addPoint: 'Point',
@@ -177,7 +177,7 @@ const COPY = {
             dragHint: 'Drag in 3D'
         },
         controls: {
-            dragIndicator: 'Adjust hue, saturation and lightness to change colors',
+            dragIndicator: 'Drag the light in the 3D scene',
             exposure: 'Exposure',
             closeTip: 'Close tip'
         },
@@ -191,13 +191,13 @@ const COPY = {
             width: 'Width',
             height: 'Height',
             reset: 'Reset Position',
-            duplicate: 'Duplicate'
+            duplicate: 'Duplicate light'
         },
         footer: {
             by: 'Developed by',
             for: 'Free use within'
         },
-        goLabDescription: 'Interactive lab for learning color theory through guided lessons, color harmony exploration, and visual practice.'
+        goLabDescription: 'Browser-based 3D lab for learning photographic lighting through guided goals, comparative observation, and virtual-to-real practice.'
     }
 };
 
