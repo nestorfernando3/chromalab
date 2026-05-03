@@ -1,6 +1,7 @@
 import { Scene, Color, FogExp2, PerspectiveCamera, WebGLRenderer, PCFSoftShadowMap, ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createPortraitModel, createEnvironment, setBackdropColor } from './src/model.js';
+import { createPortraitModel, setBackdropColor } from './src/model.js';
+import { createRoomEnvironment } from './src/room.js';
 import { LightingSystem } from './src/lighting.js';
 import { UI } from './src/ui.js';
 import { appEvents } from './src/utils/events.js';
@@ -58,9 +59,9 @@ appEvents.on('resetControls', () => {
     requestRenderIfNotRequested();
 });
 
-// Create model and environment
+// Create model and room environment
 const model = createPortraitModel(scene);
-const environment = createEnvironment(scene);
+const environment = createRoomEnvironment(scene);
 
 // Lighting system with drag support
 const lightingSystem = new LightingSystem(scene, camera, renderer);
@@ -141,9 +142,8 @@ window.addEventListener('resize', () => {
         const aspect = window.innerWidth / window.innerHeight;
         camera.aspect = aspect;
 
-        // Adjust FOV for portrait mobile screens
         if (aspect < 1) {
-            camera.fov = 40 + (1 - aspect) * 20; // Increase FOV as it gets narrower
+            camera.fov = 40 + (1 - aspect) * 20;
         } else {
             camera.fov = 40;
         }
