@@ -22,7 +22,7 @@ export default defineConfig(({ command }) => ({
         target: 'esnext'
     },
     test: {
-        environment: 'node',
+        environment: 'jsdom',
         include: ['tests/**/*.test.js'],
         globals: false
     }

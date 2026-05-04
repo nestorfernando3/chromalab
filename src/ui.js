@@ -14,6 +14,12 @@ import { renderDiagram } from './diagram.js';
 import { clearChildren } from './utils/dom.js';
 import { LessonNavigator } from './ui/LessonNavigator.js';
 import { LightControls } from './ui/LightControls.js';
+import { PaletteControls } from './ui/PaletteControls.js';
+import { LessonChecklist } from './ui/LessonChecklist.js';
+import { StudentResponse } from './ui/StudentResponse.js';
+import { ColorSystem } from './colorSystem.js';
+import { LessonProgressEngine } from './lessonProgress.js';
+import { EvidenceStore } from './evidenceStore.js';
 import { appEvents } from './utils/events.js';
 import { SandboxManager } from './ui/SandboxManager.js';
 import { ScreenshotExporter } from './ui/ScreenshotExporter.js';
@@ -43,6 +49,15 @@ export class UI {
         this._toastTimer = null;
         this._bgCustomColorInput = null;
         this._bgCustomColorHandler = null;
+        this.colorSystem = null;
+        this.paletteControls = null;
+        this.progressEngine = new LessonProgressEngine();
+        this.evidenceStore = new EvidenceStore();
+        this.lessonChecklist = new LessonChecklist(() => this.lang, this.progressEngine);
+        this.studentResponse = new StudentResponse(() => this.lang, this.evidenceStore, this.progressEngine);
+
+        // Sync completed lesson dots with evidence store on startup
+        this._syncCompletedLessonsFromEvidence();
 
         const presetNames = getPresetNames();
 
@@ -80,7 +95,7 @@ export class UI {
         this._applyControlsCollapsedState(this.controlsCollapsed, { persist: false });
         this._syncMobilePanelButtons();
 
-        setupOnboarding(() => this.loadInitialLesson(), { skipAutoStart: this.embedMode });
+        this._onboarding = setupOnboarding(() => this.loadInitialLesson(), { skipAutoStart: this.embedMode });
         if (this.embedMode) {
             document.getElementById('onboarding')?.classList.add('hidden');
             this.loadInitialLesson();
@@ -106,15 +121,69 @@ export class UI {
 
         const previousId = this.currentPreset?.id || null;
         const nextPresetId = presetNames[index];
-        if (previousId && previousId !== nextPresetId) {
-            this._markLessonCompleted(previousId);
-        }
+        // REMOVED: auto-mark previous lesson as completed on navigation
+        // Completion is now determined by LessonProgressEngine based on actions
 
         this.currentPresetIndex = index;
         this.navigator.index = index;
         const rawPreset = getPreset(nextPresetId);
         this.currentPreset = JSON.parse(JSON.stringify(rawPreset));
 
+        // Initialize pedagogical color system for this lesson
+        if (this.paletteControls) {
+            this.paletteControls.destroy();
+            this.paletteControls = null;
+        }
+        if (this.studentResponse) {
+            this.studentResponse.destroy();
+        }
+        this.colorSystem = new ColorSystem({ preset: this.currentPreset });
+        this.paletteControls = new PaletteControls(
+            this.colorSystem,
+            () => this.currentPreset,
+            () => this.lang,
+            this.lightingSystem
+        );
+
+        // Register lesson with progress engine
+        this.progressEngine.registerLesson(
+            this.currentPreset.id,
+            this.currentPreset.checklist || [],
+            this.currentPreset.completionRules || {}
+        );
+
+        // Restore previous color state if available
+        const savedEvidence = this.evidenceStore.getLessonEvidence(this.currentPreset.id);
+        if (savedEvidence?.colorState) {
+            this.colorSystem.restoreState(savedEvidence.colorState);
+        }
+
+        // Persist color state changes
+        appEvents.on('palette:previewChanged', (payload) => {
+            if (payload.lessonId === this.currentPreset?.id) {
+                this.evidenceStore.saveColorState(payload.lessonId, this.colorSystem.state);
+            }
+        });
+
+        // Persist criteria progress
+        appEvents.on('lesson:criteriaCompleted', (payload) => {
+            const completed = this.progressEngine.getCompletedCriteria(payload.lessonId);
+            this.evidenceStore.saveCriteria(payload.lessonId, completed);
+            // Update completed lessons set for dots display
+            const rules = this.currentPreset?.completionRules || {};
+            const checklist = this.currentPreset?.checklist || [];
+            const isComplete = this._evaluateCompletion(checklist, completed, rules);
+            if (isComplete) {
+                this._markLessonCompleted(payload.lessonId);
+            }
+        });
+
+        // Register screenshots as evidence
+        appEvents.on('screenshotTaken', (payload) => {
+            if (payload.lessonId) {
+                this.evidenceStore.registerScreenshot(payload.lessonId, payload.filename, 'evidence');
+            }
+        });
 
         this.lightingSystem.loadPreset(this.currentPreset);
         this._renderCurrentLesson({ collapseControls: this.controlsCollapsed, preserveSelection: false });
@@ -186,6 +255,21 @@ export class UI {
             document.getElementById('drag-indicator')?.classList.add('hidden');
             const container = document.getElementById('light-controls');
             if (container) clearChildren(container);
+        }
+
+        // Render pedagogical palette controls
+        if (this.paletteControls) {
+            this.paletteControls.render();
+        }
+
+        // Render lesson checklist
+        if (this.lessonChecklist) {
+            this.lessonChecklist.render(this.currentPreset.id, this.currentPreset.checklist || []);
+        }
+
+        // Render student response form
+        if (this.studentResponse) {
+            this.studentResponse.render(this.currentPreset.id, this.currentPreset);
         }
 
         this._applyControlsCollapsedState(Boolean(collapseControls), { persist: false });
@@ -278,9 +362,22 @@ export class UI {
         appEvents.on('screenshotFailed', () => this._showToast('status.screenshotFailed'));
         appEvents.on('tipRestored', () => this._showToast('status.tipRestored'));
         appEvents.on('escapeKey', () => {
-            document.getElementById('onboarding')?.classList.add('hidden');
+            if (this._onboarding?.skip) {
+                this._onboarding.skip();
+            } else {
+                document.getElementById('onboarding')?.classList.add('hidden');
+            }
             this._setMobilePanel('teach', false);
             this._setMobilePanel('controls', false);
+        });
+        appEvents.on('background:changed', (payload) => {
+            if (payload.color) {
+                this.activeBackgroundColor = payload.color;
+                setBackdropColor(this.scene, this.environment, payload.color);
+                const customInput = document.getElementById('bg-custom-color');
+                if (customInput) customInput.value = payload.color;
+                document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+            }
         });
     }
 
@@ -410,6 +507,22 @@ export class UI {
         }
     }
 
+    _syncCompletedLessonsFromEvidence() {
+        const allEvidence = this.evidenceStore.getAllEvidence();
+        const presetNames = getPresetNames();
+        presetNames.forEach((id) => {
+            const ev = allEvidence[id];
+            if (!ev?.criteria) return;
+            const preset = getPreset(id);
+            const checklist = preset?.checklist || [];
+            const rules = preset?.completionRules || {};
+            if (this._evaluateCompletion(checklist, ev.criteria, rules)) {
+                this.completedLessonIds.add(id);
+            }
+        });
+        this._saveCompletedLessons();
+    }
+
     _saveCompletedLessons() {
         if (typeof localStorage === 'undefined') return;
         localStorage.setItem(UI_STORAGE_KEYS.completedLessons, JSON.stringify([...this.completedLessonIds]));
@@ -420,6 +533,18 @@ export class UI {
         this.completedLessonIds.add(lessonId);
         this._saveCompletedLessons();
         this._showToast('status.lessonCompleted');
+    }
+
+    _evaluateCompletion(checklist, completedIds, rules) {
+        if (!checklist?.length) return false;
+        const completedSet = new Set(completedIds);
+        if (rules?.mode === 'allRequired') {
+            const required = checklist.filter(c => c.required);
+            if (!required.length) return false;
+            return required.every(c => completedSet.has(c.id));
+        }
+        const required = checklist.filter(c => c.required);
+        return required.length > 0 && required.every(c => completedSet.has(c.id));
     }
 
     _getCompletedLessonIndexes() {

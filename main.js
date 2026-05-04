@@ -5,7 +5,7 @@ import { LightingSystem } from './src/lighting.js';
 import { UI } from './src/ui.js';
 import { appEvents } from './src/utils/events.js';
 import { parseRuntimeConfig } from './src/runtime.js';
-import { getHarmonyColors } from './src/utils/color.js';
+import { getHarmonyColors, getHarmonyColorsHsv } from './src/utils/color.js';
 
 const runtimeConfig = parseRuntimeConfig();
 document.documentElement.lang = runtimeConfig.language;
@@ -108,7 +108,16 @@ const ui = new UI(lightingSystem, scene, renderer, environment, runtimeConfig);
 appEvents.on('presetLoaded', (preset) => {
     if (preset.baseHue === undefined || !preset.harmonyType) return;
 
-    const harmonies = getHarmonyColors(preset.baseHue, preset.harmonyType);
+    const useHsv = preset.colorModel === 'hsv';
+    const s = useHsv ? preset.saturation : (preset.saturation ?? 0.7);
+    const vOrL = useHsv
+        ? (preset.value ?? preset.lightness ?? 0.5)
+        : (preset.lightness ?? 0.5);
+
+    const harmonies = useHsv
+        ? getHarmonyColorsHsv(preset.baseHue, preset.harmonyType, s, vOrL)
+        : getHarmonyColors(preset.baseHue, preset.harmonyType, s, vOrL);
+
     if (harmonies.length === 0) return;
 
     setBackdropColor(scene, environment, harmonies[0]);

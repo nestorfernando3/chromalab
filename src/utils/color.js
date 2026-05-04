@@ -101,6 +101,79 @@ export function hslToHex(h, s, l) {
 }
 
 /**
+ * Convert HSV to RGB
+ * @param {number} h Hue 0-360
+ * @param {number} s Saturation 0-1
+ * @param {number} v Value 0-1
+ * @returns {{r:number,g:number,b:number}} 0-255
+ */
+export function hsvToRgb(h, s, v) {
+    const hh = ((h % 360) + 360) % 360;
+    const c = v * s;
+    const x = c * (1 - Math.abs(((hh / 60) % 2) - 1));
+    const m = v - c;
+    let r = 0, g = 0, b = 0;
+    if (hh < 60) { r = c; g = x; b = 0; }
+    else if (hh < 120) { r = x; g = c; b = 0; }
+    else if (hh < 180) { r = 0; g = c; b = x; }
+    else if (hh < 240) { r = 0; g = x; b = c; }
+    else if (hh < 300) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+    return {
+        r: Math.round((r + m) * 255),
+        g: Math.round((g + m) * 255),
+        b: Math.round((b + m) * 255)
+    };
+}
+
+/**
+ * Convert RGB to HSV
+ * @param {number} r 0-255
+ * @param {number} g 0-255
+ * @param {number} b 0-255
+ * @returns {{h:number,s:number,v:number}}
+ */
+export function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, v = max;
+    const d = max - min;
+    if (d !== 0) {
+        s = max === 0 ? 0 : d / max;
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+            case g: h = ((b - r) / d + 2); break;
+            case b: h = ((r - g) / d + 4); break;
+        }
+        h *= 60;
+    }
+    return { h: Math.round(h), s: Math.round(s * 100) / 100, v: Math.round(v * 100) / 100 };
+}
+
+/**
+ * Convert HSV to hex
+ * @param {number} h 0-360
+ * @param {number} s 0-1
+ * @param {number} v 0-1
+ * @returns {string}
+ */
+export function hsvToHex(h, s, v) {
+    const rgb = hsvToRgb(h, s, v);
+    return rgbToHex(rgb.r, rgb.g, rgb.b);
+}
+
+/**
+ * Convert hex to HSV
+ * @param {string} hex
+ * @returns {{h:number,s:number,v:number}}
+ */
+export function hexToHsv(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return { h: 0, s: 0, v: 0 };
+    return rgbToHsv(rgb.r, rgb.g, rgb.b);
+}
+
+/**
  * Get complementary hue (opposite on the wheel)
  * @param {number} hue 0-360
  * @returns {number} 0-360
@@ -150,7 +223,7 @@ export function tetradicHues(hue, offset = 60) {
 }
 
 /**
- * Compute harmony colors from a base hue
+ * Compute harmony colors from a base hue using HSL
  * @param {number} baseHue
  * @param {string} type 'complementary' | 'analogous' | 'triadic' | 'split' | 'tetradic'
  * @param {number} s saturation 0-1
@@ -168,6 +241,27 @@ export function getHarmonyColors(baseHue, type, s = 0.7, l = 0.5) {
         default: hues = [baseHue];
     }
     return hues.map(h => hslToHex(((h % 360) + 360) % 360, s, l));
+}
+
+/**
+ * Compute harmony colors from a base hue using HSV
+ * @param {number} baseHue
+ * @param {string} type 'complementary' | 'analogous' | 'triadic' | 'split' | 'tetradic'
+ * @param {number} s saturation 0-1
+ * @param {number} v value 0-1
+ * @returns {string[]} array of hex colors
+ */
+export function getHarmonyColorsHsv(baseHue, type, s = 0.7, v = 0.7) {
+    let hues = [];
+    switch (type) {
+        case 'complementary': hues = [baseHue, complementaryHue(baseHue)]; break;
+        case 'analogous': hues = analogousHues(baseHue); break;
+        case 'triadic': hues = triadicHues(baseHue); break;
+        case 'split': hues = splitComplementaryHues(baseHue); break;
+        case 'tetradic': hues = tetradicHues(baseHue); break;
+        default: hues = [baseHue];
+    }
+    return hues.map(h => hsvToHex(((h % 360) + 360) % 360, s, v));
 }
 
 /**

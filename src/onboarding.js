@@ -1,6 +1,7 @@
 import { appEvents } from './utils/events.js';
 
-const ONBOARDING_AUTO_START_MS = 2500;
+const KEY = 'chromaLabOnboarding';
+const TIP_KEY = 'chromaLabTipDismissed';
 
 export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {}) {
     const overlay = document.getElementById('onboarding');
@@ -11,7 +12,6 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
 
     // Migrate from old key name
     const OLD_KEY = 'lightStudioOnboardingUPCA';
-    const KEY = 'chromaLabOnboarding';
     if (typeof localStorage !== 'undefined' && localStorage.getItem(OLD_KEY)) {
         localStorage.setItem(KEY, localStorage.getItem(OLD_KEY));
         localStorage.removeItem(OLD_KEY);
@@ -20,7 +20,6 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
     const hasSeenOnboarding = typeof localStorage !== 'undefined'
         ? localStorage.getItem(KEY)
         : null;
-    const TIP_KEY = 'chromaLabTipDismissed';
 
     const showTip = () => {
         floatingTip?.classList.remove('hidden');
@@ -44,6 +43,18 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
         if (onStartCallback) onStartCallback();
     }
 
+    function skip() {
+        overlay?.classList.add('hidden');
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(KEY, 'skipped');
+        }
+        if (onStartCallback) onStartCallback();
+    }
+
+    function showOnboarding() {
+        overlay?.classList.remove('hidden');
+    }
+
     if (skipAutoStart) {
         overlay?.classList.add('hidden');
         if (onStartCallback) onStartCallback();
@@ -51,24 +62,22 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
         overlay?.classList.add('hidden');
         if (onStartCallback) onStartCallback();
     } else {
-        // First visit — auto-start after a short delay so the user sees the intro
-        const autoStartTimer = setTimeout(start, ONBOARDING_AUTO_START_MS);
-        startBtn?.addEventListener('click', () => {
-            clearTimeout(autoStartTimer);
-            start();
-        });
-        return; // skip the click handler below (startBtn already handled)
+        // First visit — wait for explicit user action, no auto-close
+        startBtn?.addEventListener('click', start);
+        // Allow skip via Escape key handled in UI.js
     }
 
-    startBtn?.addEventListener('click', start);
+    // Help button re-opens onboarding
+    helpBtn?.addEventListener('click', () => {
+        showOnboarding();
+    });
 
     tipClose?.addEventListener('click', hideTip);
-    helpBtn?.addEventListener('click', () => {
-        showTip();
-        appEvents.emit('tipRestored');
-    });
 
     if (typeof localStorage !== 'undefined' && localStorage.getItem(TIP_KEY)) {
         hideTip();
     }
+
+    // Expose skip for UI escape handler
+    return { skip, showOnboarding };
 }

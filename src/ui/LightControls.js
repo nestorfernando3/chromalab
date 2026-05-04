@@ -207,7 +207,14 @@ export class LightControls {
             this.onDiagramUpdate();
         };
 
-        bindSlider('ctrl-intensity', (val) => this.lightingSystem.updateLightIntensity(lightId, val));
+        bindSlider('ctrl-intensity', (val) => {
+            this.lightingSystem.updateLightIntensity(lightId, val);
+            appEvents.emit('light:intensityChanged', {
+                lessonId: preset.id,
+                lightId,
+                intensity: val
+            });
+        });
         bindSlider('ctrl-x', updatePos('x'));
         bindSlider('ctrl-y', updatePos('y'));
         bindSlider('ctrl-z', updatePos('z'));

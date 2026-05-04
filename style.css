@@ -1310,6 +1310,263 @@ a:focus-visible {
   border-top: 1px solid var(--border);
 }
 
+/* ── Palette Controls ── */
+.palette-controls {
+  margin-bottom: 18px;
+}
+
+.palette-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.palette-preview-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid var(--border-strong);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast);
+}
+
+.palette-hue-name {
+  font-size: 12px;
+  font-weight: var(--font-w-medium);
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+
+.palette-swatches {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.palette-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+}
+
+.palette-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 6px 0 10px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border-left: 2px solid var(--border-strong);
+}
+
+.palette-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.palette-action-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: var(--font-w-medium);
+}
+
+.palette-select {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.palette-select:focus-visible {
+  outline: 2px solid var(--brand-light);
+  outline-offset: 2px;
+}
+
+/* ── Lesson Checklist ── */
+.checklist-section {
+  margin-bottom: 18px;
+}
+.checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+.checklist-item.completed {
+  border-color: rgba(67, 160, 71, 0.4);
+  background: rgba(67, 160, 71, 0.08);
+}
+.checklist-item.completed .checklist-box {
+  background: rgba(67, 160, 71, 0.25);
+  border-color: rgba(67, 160, 71, 0.6);
+}
+.checklist-item.completed .checklist-box::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 8px;
+  border: solid rgba(67, 160, 71, 0.9);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin: 2px 0 0 5px;
+}
+.checklist-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.checklist-text {
+  flex: 1;
+  line-height: 1.4;
+}
+.checklist-required {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(196, 30, 58, 0.12);
+  color: var(--brand-light);
+  font-size: 9px;
+  font-weight: var(--font-w-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.checklist-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.checklist-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-light));
+  border-radius: 999px;
+  transition: width var(--transition-base);
+}
+.checklist-progress-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: var(--font-w-medium);
+  min-width: 60px;
+  text-align: right;
+}
+.checklist-done {
+  font-size: 12px;
+  color: rgba(67, 160, 71, 0.9);
+  font-weight: var(--font-w-medium);
+  text-align: center;
+  padding: 6px;
+  background: rgba(67, 160, 71, 0.08);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+}
+
+/* ── Student Response ── */
+.response-section {
+  margin-bottom: 18px;
+}
+.response-prompt {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border-left: 2px solid var(--brand);
+}
+.response-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+.response-textarea::placeholder {
+  color: var(--text-muted);
+}
+.response-textarea:focus-visible {
+  outline: 2px solid var(--brand-light);
+  outline-offset: 2px;
+}
+.response-status {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: right;
+}
+.response-values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.response-values-label {
+  font-weight: var(--font-w-medium);
+}
+.response-value-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  display: inline-block;
+}
+
+.response-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.response-action-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
 /* ── Model Selector ── */
 .model-selector {
   display: flex;

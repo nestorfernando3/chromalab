@@ -6,10 +6,15 @@ import {
     rgbToHex,
     hslToHex,
     hexToHsl,
+    hsvToRgb,
+    rgbToHsv,
+    hsvToHex,
+    hexToHsv,
     complementaryHue,
     analogousHues,
     triadicHues,
     getHarmonyColors,
+    getHarmonyColorsHsv,
     contrastRatio,
     hueTemperature,
     hueName
@@ -85,6 +90,70 @@ describe('color utilities', () => {
         });
     });
 
+    describe('hsvToRgb and rgbToHsv', () => {
+        it('converts red', () => {
+            expect(hsvToRgb(0, 1, 1)).toEqual({ r: 255, g: 0, b: 0 });
+        });
+
+        it('converts green', () => {
+            expect(hsvToRgb(120, 1, 1)).toEqual({ r: 0, g: 255, b: 0 });
+        });
+
+        it('converts blue', () => {
+            expect(hsvToRgb(240, 1, 1)).toEqual({ r: 0, g: 0, b: 255 });
+        });
+
+        it('round-trips red', () => {
+            const rgb = hsvToRgb(0, 1, 1);
+            const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+            expect(hsv.h).toBe(0);
+            expect(hsv.s).toBe(1);
+            expect(hsv.v).toBe(1);
+        });
+
+        it('round-trips a mid-tone color', () => {
+            const original = { h: 200, s: 0.75, v: 0.45 };
+            const rgb = hsvToRgb(original.h, original.s, original.v);
+            const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+            expect(hsv.h).toBeCloseTo(original.h, 0);
+            expect(hsv.s).toBeCloseTo(original.s, 2);
+            expect(hsv.v).toBeCloseTo(original.v, 2);
+        });
+    });
+
+    describe('hsvToHex and hexToHsv', () => {
+        it('converts red hsv to hex', () => {
+            expect(hsvToHex(0, 1, 1)).toBe('#ff0000');
+        });
+
+        it('converts red hex to hsv', () => {
+            expect(hexToHsv('#ff0000')).toEqual({ h: 0, s: 1, v: 1 });
+        });
+
+        it('round-trips a color', () => {
+            const original = { h: 150, s: 0.6, v: 0.4 };
+            const hex = hsvToHex(original.h, original.s, original.v);
+            const hsv = hexToHsv(hex);
+            expect(hsv.h).toBeCloseTo(original.h, 0);
+            expect(hsv.s).toBeCloseTo(original.s, 2);
+            expect(hsv.v).toBeCloseTo(original.v, 2);
+        });
+    });
+
+    describe('hue normalization', () => {
+        it('handles negative hue', () => {
+            const rgbNeg = hsvToRgb(-60, 1, 1);
+            const rgbPos = hsvToRgb(300, 1, 1);
+            expect(rgbNeg).toEqual(rgbPos);
+        });
+
+        it('handles hue above 360', () => {
+            const rgbOver = hsvToRgb(420, 1, 1);
+            const rgbNorm = hsvToRgb(60, 1, 1);
+            expect(rgbOver).toEqual(rgbNorm);
+        });
+    });
+
     describe('harmony functions', () => {
         it('returns complementary hue', () => {
             expect(complementaryHue(0)).toBe(180);
@@ -126,6 +195,40 @@ describe('color utilities', () => {
         it('returns hex strings', () => {
             const colors = getHarmonyColors(120, 'complementary');
             expect(colors[0]).toMatch(/^#[0-9a-f]{6}$/i);
+        });
+    });
+
+    describe('getHarmonyColorsHsv', () => {
+        it('returns 2 colors for complementary', () => {
+            expect(getHarmonyColorsHsv(0, 'complementary')).toHaveLength(2);
+        });
+
+        it('returns 3 colors for analogous', () => {
+            expect(getHarmonyColorsHsv(0, 'analogous')).toHaveLength(3);
+        });
+
+        it('returns 3 colors for triadic', () => {
+            expect(getHarmonyColorsHsv(0, 'triadic')).toHaveLength(3);
+        });
+
+        it('returns 3 colors for split', () => {
+            expect(getHarmonyColorsHsv(0, 'split')).toHaveLength(3);
+        });
+
+        it('returns 4 colors for tetradic', () => {
+            expect(getHarmonyColorsHsv(0, 'tetradic')).toHaveLength(4);
+        });
+
+        it('returns hex strings', () => {
+            const colors = getHarmonyColorsHsv(120, 'complementary');
+            expect(colors[0]).toMatch(/^#[0-9a-f]{6}$/i);
+        });
+
+        it('produces different output than HSL for same inputs when value differs from lightness', () => {
+            const hsl = getHarmonyColors(200, 'complementary', 0.75, 0.45);
+            const hsv = getHarmonyColorsHsv(200, 'complementary', 0.75, 0.45);
+            // HSL and HSV with same numeric values produce different colors
+            expect(hsl[0]).not.toBe(hsv[0]);
         });
     });
 

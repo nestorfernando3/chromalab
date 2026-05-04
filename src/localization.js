@@ -106,6 +106,47 @@ const COPY = {
             tipRestored: 'Consejo visible de nuevo',
             lessonCompleted: 'Lección marcada como completada'
         },
+        palette: {
+            palette: 'Paleta',
+            hue: 'Matiz',
+            saturation: 'Saturación',
+            value: 'Valor (HSV)',
+            harmony: 'Armonía',
+            applyToLight: 'Aplicar a luz principal',
+            applyToBackground: 'Aplicar a fondo',
+            valueNote: 'Valor: claridad del color. Exposición: brillo global de la cámara.'
+        },
+        checklist: {
+            title: 'Pasos de la lección',
+            required: 'Obligatorio',
+            complete: 'completado',
+            lessonDone: '¡Lección completada! Puedes pasar a la siguiente.',
+            labels: {
+                'adjust-hue': 'Cambiar el matiz',
+                'adjust-saturation': 'Cambiar la saturación',
+                'adjust-value': 'Cambiar el valor',
+                'apply-color': 'Aplicar color a la escena',
+                'assign-palette': 'Asignar paleta a luces',
+                'write-observation': 'Escribir observación',
+                'identify-complement': 'Identificar color complementario',
+                'adjust-intensity': 'Ajustar intensidad de la luz',
+                'add-light': 'Agregar una luz',
+                'take-screenshot': 'Tomar captura',
+                'compare-versions': 'Comparar versiones',
+                'justify-choice': 'Justificar elección'
+            }
+        },
+        response: {
+            title: 'Tu Observación',
+            placeholder: 'Escribe lo que descubriste al experimentar...',
+            saving: 'Guardando...',
+            saved: 'Guardado localmente',
+            currentValues: 'Paleta actual:',
+            exportBtn: 'Exportar evidencia',
+            copyBtn: 'Copiar resumen',
+            exportEmpty: 'No hay evidencia para exportar.',
+            copied: 'Resumen copiado al portapapeles'
+        },
         goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.'
     },
     en: {
@@ -212,6 +253,47 @@ const COPY = {
             screenshotFailed: 'Could not save screenshot',
             tipRestored: 'Tip shown again',
             lessonCompleted: 'Lesson marked complete'
+        },
+        palette: {
+            palette: 'Palette',
+            hue: 'Hue',
+            saturation: 'Saturation',
+            value: 'Value (HSV)',
+            harmony: 'Harmony',
+            applyToLight: 'Apply to key light',
+            applyToBackground: 'Apply to background',
+            valueNote: 'Value: clarity of the color. Exposure: global brightness of the camera.'
+        },
+        checklist: {
+            title: 'Lesson steps',
+            required: 'Required',
+            complete: 'complete',
+            lessonDone: 'Lesson completed! You can move on to the next one.',
+            labels: {
+                'adjust-hue': 'Change the hue',
+                'adjust-saturation': 'Change the saturation',
+                'adjust-value': 'Change the value',
+                'apply-color': 'Apply color to the scene',
+                'assign-palette': 'Assign palette to lights',
+                'write-observation': 'Write an observation',
+                'identify-complement': 'Identify the complementary color',
+                'adjust-intensity': 'Adjust light intensity',
+                'add-light': 'Add a light',
+                'take-screenshot': 'Take a screenshot',
+                'compare-versions': 'Compare versions',
+                'justify-choice': 'Justify your choice'
+            }
+        },
+        response: {
+            title: 'Your Observation',
+            placeholder: 'Write what you discovered while experimenting...',
+            saving: 'Saving...',
+            saved: 'Saved locally',
+            currentValues: 'Current palette:',
+            exportBtn: 'Export evidence',
+            copyBtn: 'Copy summary',
+            exportEmpty: 'No evidence to export.',
+            copied: 'Summary copied to clipboard'
         },
         goLabDescription: 'Interactive lab for learning color theory through chromatic exploration and 3D simulation.'
     }

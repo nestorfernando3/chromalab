@@ -4,6 +4,7 @@
  */
 import { createElement, clearChildren } from '../utils/dom.js';
 import { getAppCopy } from '../localization.js';
+import { appEvents } from '../utils/events.js';
 
 function localizeValue(value, lang) {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -47,6 +48,11 @@ export class SandboxManager {
         const preset = this.getCurrentPreset();
         preset.lights.push(newConfig);
         this.onLightsChanged(newConfig);
+        appEvents.emit('light:added', {
+            lessonId: preset.id,
+            lightId: newConfig.id,
+            type: lightType
+        });
     }
 
     removeSandboxLight(lightId) {

@@ -11,10 +11,29 @@ const presets = {
         name: { es: 'Matiz, Saturación y Valor', en: 'Hue, Saturation and Value' },
         category: { es: 'Fundamentos', en: 'Fundamentals' },
         difficulty: 1,
+        colorModel: 'hsv',
         baseHue: 200,
-        harmonyType: 'complementary',
+        harmonyType: 'single',
         saturation: 0.75,
+        value: 0.45,
         lightness: 0.45,
+        learningControls: ['hue', 'saturation', 'value'],
+        paletteTargets: ['keyLight', 'background'],
+        checklist: [
+            { id: 'adjust-hue', event: 'color:hueChanged', required: true },
+            { id: 'adjust-saturation', event: 'color:saturationChanged', required: true },
+            { id: 'adjust-value', event: 'color:valueChanged', required: true },
+            { id: 'apply-color', event: 'palette:applied', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Describe cómo cambió la sensación del color al modificar saturación y valor.',
+            en: 'Describe how the color feeling changed when adjusting saturation and value.'
+        },
+        completionRules: {
+            mode: 'allRequired',
+            minObservationLength: 20
+        },
         goal: {
             es: 'Comprender que cualquier color se puede describir con tres valores: matiz (tono), saturación (intensidad) y valor (claridad).',
             en: 'Understand that any color can be described with three values: hue (tone), saturation (intensity), and value (lightness).'
@@ -35,10 +54,26 @@ const presets = {
         name: { es: 'Complementarios', en: 'Complementary' },
         category: { es: 'Armonía básica', en: 'Basic harmony' },
         difficulty: 1,
+        colorModel: 'hsv',
         baseHue: 200,
         harmonyType: 'complementary',
         saturation: 0.7,
+        value: 0.5,
         lightness: 0.5,
+        learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        paletteTargets: ['keyLight', 'fillLight', 'background'],
+        checklist: [
+            { id: 'adjust-hue', event: 'color:hueChanged', required: true },
+            { id: 'identify-complement', event: 'color:harmonyChanged', required: true },
+            { id: 'apply-color', event: 'palette:applied', required: true },
+            { id: 'adjust-intensity', event: 'light:intensityChanged', required: false },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Describe cómo se siente el contraste entre los colores complementarios que elegiste.',
+            en: 'Describe how the contrast between the complementary colors you chose feels.'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Descubrir que dos colores opuestos en la rueda generan el máximo contraste y vibración visual.',
             en: 'Discover that two opposite colors on the wheel create maximum contrast and visual vibration.'
@@ -59,10 +94,24 @@ const presets = {
         name: { es: 'Análogos', en: 'Analogous' },
         category: { es: 'Armonía básica', en: 'Basic harmony' },
         difficulty: 1,
+        colorModel: 'hsv',
         baseHue: 160,
         harmonyType: 'analogous',
         saturation: 0.6,
+        value: 0.5,
         lightness: 0.5,
+        learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        paletteTargets: ['keyLight', 'fillLight', 'rimLight'],
+        checklist: [
+            { id: 'adjust-hue', event: 'color:hueChanged', required: true },
+            { id: 'assign-palette', event: 'palette:assignedToLights', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: '¿Por qué los colores análogos generan una sensación de calma y unidad?',
+            en: 'Why do analogous colors generate a sense of calm and unity?'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Construir una paleta con colores vecinos en la rueda para lograr una sensación de calma y unidad.',
             en: 'Build a palette with neighboring colors on the wheel to achieve a sense of calm and unity.'
@@ -83,10 +132,24 @@ const presets = {
         name: { es: 'Triádicos en carteles', en: 'Triadic in Posters' },
         category: { es: 'Aplicación cultural', en: 'Cultural application' },
         difficulty: 2,
+        colorModel: 'hsv',
         baseHue: 220,
         harmonyType: 'triadic',
         saturation: 0.75,
+        value: 0.5,
         lightness: 0.5,
+        learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        paletteTargets: ['keyLight', 'fillLight', 'rimLight'],
+        checklist: [
+            { id: 'adjust-hue', event: 'color:hueChanged', required: true },
+            { id: 'assign-palette', event: 'palette:assignedToLights', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Explica la proporción dominante/acento en tu composición triádica.',
+            en: 'Explain the dominant/accent proportion in your triadic composition.'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Reconocer cómo los carteles publicitarios y políticos usan armonías triádicas para captar la atención y equilibrar información.',
             en: 'Recognize how advertising and political posters use triadic harmonies to capture attention and balance information.'
@@ -107,10 +170,24 @@ const presets = {
         name: { es: 'Contraste simultáneo', en: 'Simultaneous Contrast' },
         category: { es: 'Percepción visual', en: 'Visual perception' },
         difficulty: 2,
+        colorModel: 'hsv',
         baseHue: 0,
         harmonyType: 'complementary',
         saturation: 0.0,
+        value: 0.5,
         lightness: 0.5,
+        learningControls: ['hue', 'saturation', 'value'],
+        paletteTargets: ['background'],
+        checklist: [
+            { id: 'apply-color', event: 'palette:applied', required: true },
+            { id: 'compare-versions', event: 'palette:applied', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Describe cómo cambió la percepción del color al modificar el fondo.',
+            en: 'Describe how color perception changed when modifying the background.'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Experimentar cómo un mismo color parece diferente según el fondo que lo rodea (efecto de Chevreul).',
             en: 'Experiment how the same color looks different depending on the surrounding background (Chevreul effect).'
@@ -131,10 +208,25 @@ const presets = {
         name: { es: 'Color en cine y publicidad', en: 'Color in Film and Advertising' },
         category: { es: 'Semiótica', en: 'Semiotics' },
         difficulty: 2,
+        colorModel: 'hsv',
         baseHue: 0,
         harmonyType: 'analogous',
         saturation: 0.8,
+        value: 0.45,
         lightness: 0.45,
+        learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        paletteTargets: ['keyLight', 'fillLight', 'rimLight'],
+        checklist: [
+            { id: 'adjust-hue', event: 'color:hueChanged', required: true },
+            { id: 'apply-color', event: 'palette:applied', required: true },
+            { id: 'justify-choice', event: 'lesson:responseChanged', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Justifica tu elección de colores: ¿qué emoción o concepto comunican y por qué?',
+            en: 'Justify your color choice: what emotion or concept do they communicate and why?'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Analizar cómo el color funciona como signo cultural: qué emociones y valores transmite en diferentes contextos mediáticos.',
             en: 'Analyze how color functions as a cultural sign: what emotions and values it transmits in different media contexts.'
@@ -155,10 +247,26 @@ const presets = {
         name: { es: 'Temperatura y atmósfera', en: 'Temperature and Atmosphere' },
         category: { es: 'Emocional', en: 'Emotional' },
         difficulty: 2,
+        colorModel: 'hsv',
         baseHue: 30,
         harmonyType: 'analogous',
         saturation: 0.65,
+        value: 0.5,
         lightness: 0.5,
+        learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        paletteTargets: ['keyLight', 'fillLight'],
+        checklist: [
+            { id: 'adjust-hue', event: 'color:hueChanged', required: true },
+            { id: 'apply-color', event: 'palette:applied', required: true },
+            { id: 'take-screenshot', event: 'screenshotTaken', required: true },
+            { id: 'compare-versions', event: 'palette:applied', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Compara la emoción que transmiten la versión cálida y la versión fría.',
+            en: 'Compare the emotion transmitted by the warm version and the cool version.'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Distinguir entre colores cálidos (que avanzan, activan) y fríos (que retroceden, calman), y aplicarlos para crear atmósferas.',
             en: 'Distinguish between warm colors (advancing, activating) and cool colors (receding, calming), and apply them to create atmospheres.'
@@ -180,10 +288,25 @@ const presets = {
         category: { es: 'Sandbox', en: 'Sandbox' },
         difficulty: 3,
         isSandbox: true,
+        colorModel: 'hsv',
         baseHue: 180,
         harmonyType: 'complementary',
         saturation: 0.6,
+        value: 0.5,
         lightness: 0.5,
+        learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        paletteTargets: ['keyLight', 'fillLight', 'rimLight', 'background'],
+        checklist: [
+            { id: 'add-light', event: 'light:added', required: true },
+            { id: 'apply-color', event: 'palette:applied', required: true },
+            { id: 'take-screenshot', event: 'screenshotTaken', required: true },
+            { id: 'write-observation', event: 'lesson:responseChanged', required: true }
+        ],
+        reflectionPrompt: {
+            es: 'Justifica tu setup de luces: ¿qué emoción o idea personal comunica?',
+            en: 'Justify your lighting setup: what personal emotion or idea does it communicate?'
+        },
+        completionRules: { mode: 'allRequired', minObservationLength: 20 },
         goal: {
             es: 'Crear una iluminación libre que comunique una emoción o idea personal, experimentando con todos los controles disponibles.',
             en: 'Create a free lighting setup that communicates a personal emotion or idea, experimenting with all available controls.'
