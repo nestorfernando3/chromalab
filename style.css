@@ -209,7 +209,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
 }
-.color-wheel-demo {
+.color-wheel-orbit {
   position: relative;
   width: 96px;
   height: 96px;

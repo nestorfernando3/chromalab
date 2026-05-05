@@ -2,7 +2,7 @@
 
 Laboratorio virtual interactivo para aprender teoría del color.
 
-🌐 **[Ver Demo en Línea](https://nestorfernando3.github.io/chromalab/)**
+🌐 **[Abrir ChromaLab en línea](https://nestorfernando3.github.io/chromalab/)**
 
 ![Three.js](https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
