@@ -44,7 +44,7 @@ export class LessonChecklist {
         header.innerHTML = `<svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M9 11l3 3L22 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> <span>${copy.title}</span>`;
         container.appendChild(header);
 
-        // List
+        // List with compression for completed steps
         const ul = document.createElement('ul');
         ul.className = 'checklist';
 
@@ -52,13 +52,23 @@ export class LessonChecklist {
             ? this.progressEngine.getCompletedCriteria(lessonId)
             : [];
 
-        checklist.forEach(item => {
+        const hasCompletedItems = checklist.some(item => completedIds.includes(item.id));
+
+        checklist.forEach((item, index) => {
+            const isCompleted = completedIds.includes(item.id);
+            const isRequired = item.required;
+            const isActive = !isCompleted && !checklist.slice(0, checklist.indexOf(item)).some(s => !completedIds.includes(s.id)) && checklist.slice(0, index).every(s => completedIds.includes(s.id) || !s.required);
+            const isFirstPending = !isCompleted && !checklist.slice(0, index).some(s => !completedIds.includes(s.id));
+
             const li = document.createElement('li');
             li.className = 'checklist-item';
-            li.dataset.criteriaId = item.id;
-            if (completedIds.includes(item.id)) {
+            if (isCompleted) {
                 li.classList.add('completed');
+                if (hasCompletedItems) {
+                    li.style.setProperty('opacity', '0.55');
+                }
             }
+            li.dataset.criteriaId = item.id;
 
             const checkbox = document.createElement('span');
             checkbox.className = 'checklist-box';
@@ -68,7 +78,7 @@ export class LessonChecklist {
             text.className = 'checklist-text';
             text.textContent = this._getItemLabel(item.id, lang);
 
-            if (item.required) {
+            if (isRequired) {
                 const requiredBadge = document.createElement('span');
                 requiredBadge.className = 'checklist-required';
                 requiredBadge.textContent = copy.required;
@@ -96,6 +106,8 @@ export class LessonChecklist {
 
         const progressText = document.createElement('span');
         progressText.className = 'checklist-progress-text';
+        progressText.setAttribute('aria-live', 'polite');
+        progressText.setAttribute('aria-atomic', 'true');
         progressText.textContent = `${percent}% ${copy.complete}`;
 
         progressWrap.appendChild(progressBar);
@@ -110,6 +122,8 @@ export class LessonChecklist {
         if (allRequiredDone && checklist.length > 0) {
             const doneMsg = document.createElement('p');
             doneMsg.className = 'checklist-done';
+            doneMsg.setAttribute('role', 'status');
+            doneMsg.setAttribute('aria-live', 'polite');
             doneMsg.textContent = copy.lessonDone;
             container.appendChild(doneMsg);
         }

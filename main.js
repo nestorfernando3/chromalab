@@ -53,11 +53,6 @@ controls.target.set(0, 1.65, 0);
 controls.enablePan = false;
 controls.update();
 
-appEvents.on('resetControls', () => {
-    controls.reset();
-    requestRenderIfNotRequested();
-});
-
 // Create model and environment
 const model = createPortraitModel(scene);
 const environment = createEnvironment(scene);
@@ -103,33 +98,36 @@ lightingSystem.onLightDragEnd = (lightName) => {
 };
 
 // UI - pass lighting system for drag updates
-const ui = new UI(lightingSystem, scene, renderer, environment, runtimeConfig);
+const ui = new UI(lightingSystem, scene, renderer, environment, {
+    ...runtimeConfig,
+    onResetControls: () => {
+        controls.reset();
+        requestRenderIfNotRequested();
+    },
+    onPresetLoaded: (preset) => {
+        if (preset.baseHue === undefined || !preset.harmonyType) return;
 
-appEvents.on('presetLoaded', (preset) => {
-    if (preset.baseHue === undefined || !preset.harmonyType) return;
+        const useHsv = preset.colorModel === 'hsv';
+        const saturation = preset.saturation ?? 0.7;
+        const valueOrLightness = useHsv
+            ? (preset.value ?? preset.lightness ?? 0.5)
+            : (preset.lightness ?? 0.5);
+        const harmonies = useHsv
+            ? getHarmonyColorsHsv(preset.baseHue, preset.harmonyType, saturation, valueOrLightness)
+            : getHarmonyColors(preset.baseHue, preset.harmonyType, saturation, valueOrLightness);
+        if (harmonies.length === 0) return;
 
-    const useHsv = preset.colorModel === 'hsv';
-    const s = useHsv ? preset.saturation : (preset.saturation ?? 0.7);
-    const vOrL = useHsv
-        ? (preset.value ?? preset.lightness ?? 0.5)
-        : (preset.lightness ?? 0.5);
+        setBackdropColor(scene, environment, harmonies[0]);
 
-    const harmonies = useHsv
-        ? getHarmonyColorsHsv(preset.baseHue, preset.harmonyType, s, vOrL)
-        : getHarmonyColors(preset.baseHue, preset.harmonyType, s, vOrL);
+        const keyConfig = preset.lights?.find(l => l.type === 'key');
+        const fillConfig = preset.lights?.find(l => l.type === 'fill');
 
-    if (harmonies.length === 0) return;
-
-    setBackdropColor(scene, environment, harmonies[0]);
-
-    const keyConfig = preset.lights?.find(l => l.type === 'key');
-    const fillConfig = preset.lights?.find(l => l.type === 'fill');
-
-    if (keyConfig) {
-        lightingSystem.updateLightColor(keyConfig.id, harmonies[0]);
-    }
-    if (fillConfig && harmonies.length > 1) {
-        lightingSystem.updateLightColor(fillConfig.id, harmonies[1]);
+        if (keyConfig) {
+            lightingSystem.updateLightColor(keyConfig.id, harmonies[0]);
+        }
+        if (fillConfig && harmonies.length > 1) {
+            lightingSystem.updateLightColor(fillConfig.id, harmonies[1]);
+        }
     }
 });
 

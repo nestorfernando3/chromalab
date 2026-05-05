@@ -26,12 +26,22 @@ export class StudentResponse {
         const lang = this.getLang();
         const copy = this._getCopy(lang);
         const prompt = preset?.reflectionPrompt?.[lang] || preset?.reflectionPrompt?.es || '';
+        const completionMsg = preset?.completionMessage?.[lang] || preset?.completionMessage?.es || '';
 
         // Header
         const header = document.createElement('div');
         header.className = 'section-label';
         header.innerHTML = `<svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M4 6.5h8l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 19V6.3A1.5 1.5 0 0 1 6.5 4.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 4.8V9h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> <span>${copy.title}</span>`;
         container.appendChild(header);
+
+        // Check if lesson is complete - show completion summary
+        const checklist = preset?.checklist || [];
+        const completedIds = this.progressEngine ? this.progressEngine.getCompletedCriteria(lessonId) : [];
+        const allRequiredDone = checklist.filter(c => c.required).every(c => completedIds.includes(c.id));
+
+        if (allRequiredDone && checklist.length > 0) {
+            this._renderCompletionSummary(container, completionMsg, copy);
+        }
 
         // Prompt
         if (prompt) {
@@ -51,12 +61,14 @@ export class StudentResponse {
         this._textarea.placeholder = copy.placeholder;
         this._textarea.value = existingObservation;
         this._textarea.rows = 3;
+        this._textarea.setAttribute('aria-label', copy.title);
         this._textarea.addEventListener('input', () => this._onInput());
         container.appendChild(this._textarea);
 
         // Save status
         this._saveStatusEl = document.createElement('span');
         this._saveStatusEl.className = 'response-status';
+        this._saveStatusEl.setAttribute('aria-live', 'polite');
         this._saveStatusEl.textContent = existingObservation ? copy.saved : '';
         container.appendChild(this._saveStatusEl);
 
@@ -67,23 +79,34 @@ export class StudentResponse {
         container.appendChild(valuesWrap);
         this._valuesWrap = valuesWrap;
 
-        // Export / copy actions
-        const actions = document.createElement('div');
-        actions.className = 'response-actions';
+        // Check evidence readiness - show empty state or show actions
+        const hasEvidence = existingObservation || completedIds.length > 0;
+        if (!hasEvidence) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `<span class="empty-state-icon">📝</span><span class="empty-state-text">${copy.noEvidence}</span>`;
+            container.appendChild(emptyState);
+        }
 
-        const exportBtn = document.createElement('button');
-        exportBtn.className = 'btn btn-ghost response-action-btn';
-        exportBtn.textContent = copy.exportBtn;
-        exportBtn.addEventListener('click', () => this._exportEvidence());
-        actions.appendChild(exportBtn);
+        // Export / copy actions (only shown when evidence exists)
+        if (hasEvidence) {
+            const actions = document.createElement('div');
+            actions.className = 'response-actions';
 
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn btn-ghost response-action-btn';
-        copyBtn.textContent = copy.copyBtn;
-        copyBtn.addEventListener('click', () => this._copySummary());
-        actions.appendChild(copyBtn);
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'btn btn-ghost response-action-btn';
+            exportBtn.textContent = copy.exportBtn;
+            exportBtn.addEventListener('click', () => this._exportEvidence());
+            actions.appendChild(exportBtn);
 
-        container.appendChild(actions);
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'btn btn-ghost response-action-btn';
+            copyBtn.textContent = copy.copyBtn;
+            copyBtn.addEventListener('click', () => this._copySummary());
+            actions.appendChild(copyBtn);
+
+            container.appendChild(actions);
+        }
 
         // Listen for color changes to update values display
         this._onColorChange = (payload) => {
@@ -95,6 +118,56 @@ export class StudentResponse {
         appEvents.on('color:saturationChanged', this._onColorChange);
         appEvents.on('color:valueChanged', this._onColorChange);
         appEvents.on('palette:previewChanged', this._onColorChange);
+    }
+
+    _renderCompletionSummary(container, message, copy) {
+        const summary = document.createElement('div');
+        summary.className = 'completion-summary';
+        summary.setAttribute('role', 'status');
+        summary.setAttribute('aria-live', 'polite');
+
+        const badge = document.createElement('div');
+        badge.className = 'completion-badge';
+        badge.innerHTML = `<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true" width="14" height="14"><path d="M9 11l3 3L22 4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${copy.lessonCompleteLabel || 'Completada'}`;
+        summary.appendChild(badge);
+
+        if (message) {
+            const title = document.createElement('div');
+            title.className = 'completion-title';
+            title.textContent = message;
+            summary.appendChild(title);
+        }
+
+        const evidenceItems = document.createElement('div');
+        evidenceItems.className = 'completion-evidence';
+        const evLabels = [copy.evidencePalette || 'Paleta', copy.evidenceObservation || 'Observación', copy.evidenceScene || 'Escena'];
+        evLabels.forEach(label => {
+            const item = document.createElement('span');
+            item.className = 'completion-evidence-item';
+            item.innerHTML = `<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true" width="12" height="12"><path d="M9 11l3 3L22 4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${label}`;
+            evidenceItems.appendChild(item);
+        });
+        summary.appendChild(evidenceItems);
+
+        // Next lesson action
+        const actions = document.createElement('div');
+        actions.className = 'completion-actions';
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'btn btn-primary';
+        nextBtn.innerHTML = `${copy.nextLessonBtn || 'Siguiente lección'} <span class="arrow" aria-hidden="true">→</span>`;
+        nextBtn.addEventListener('click', () => {
+            appEvents.emit('lesson:nextRequested');
+        });
+        actions.appendChild(nextBtn);
+
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'btn btn-ghost';
+        exportBtn.textContent = copy.exportEvidenceBtn || 'Exportar evidencia';
+        exportBtn.addEventListener('click', () => this._exportEvidence());
+        actions.appendChild(exportBtn);
+
+        summary.appendChild(actions);
+        container.appendChild(summary);
     }
 
     destroy() {

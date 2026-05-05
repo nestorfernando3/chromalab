@@ -251,7 +251,7 @@ export function getHarmonyColors(baseHue, type, s = 0.7, l = 0.5) {
  * @param {number} v value 0-1
  * @returns {string[]} array of hex colors
  */
-export function getHarmonyColorsHsv(baseHue, type, s = 0.7, v = 0.7) {
+export function getHarmonyColorsHsv(baseHue, type, s = 0.7, v = 0.5) {
     let hues = [];
     switch (type) {
         case 'complementary': hues = [baseHue, complementaryHue(baseHue)]; break;

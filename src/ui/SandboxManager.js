@@ -3,15 +3,7 @@
  * adding, removing and listing lights in the sandbox preset.
  */
 import { createElement, clearChildren } from '../utils/dom.js';
-import { getAppCopy } from '../localization.js';
-import { appEvents } from '../utils/events.js';
-
-function localizeValue(value, lang) {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        return value[lang] || value.es || value.en || '';
-    }
-    return value || '';
-}
+import { getAppCopy, localizeValue } from '../localization.js';
 
 export class SandboxManager {
     /**
@@ -48,11 +40,6 @@ export class SandboxManager {
         const preset = this.getCurrentPreset();
         preset.lights.push(newConfig);
         this.onLightsChanged(newConfig);
-        appEvents.emit('light:added', {
-            lessonId: preset.id,
-            lightId: newConfig.id,
-            type: lightType
-        });
     }
 
     removeSandboxLight(lightId) {

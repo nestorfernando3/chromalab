@@ -3,16 +3,20 @@
  * header updates, goal/observe sections and keyboard shortcuts.
  */
 import { clearChildren, setText } from '../utils/dom.js';
-import { appEvents } from '../utils/events.js';
 
 export class LessonNavigator {
     /**
      * @param {string[]} presetNames
      * @param {Function} onLessonLoad - async callback(index)
+     * @param {Object} callbacks - optional direct callbacks to replace event bus
+     * @param {Function} [callbacks.onResetControls]
+     * @param {Function} [callbacks.onEscapeKey]
      */
-    constructor(presetNames, onLessonLoad) {
+    constructor(presetNames, onLessonLoad, callbacks = {}) {
         this.presetNames = presetNames;
         this.onLessonLoad = onLessonLoad;
+        this.onResetControls = callbacks.onResetControls || null;
+        this.onEscapeKey = callbacks.onEscapeKey || null;
         this.currentIndex = 0;
 
         this._createLessonDots();
@@ -39,6 +43,10 @@ export class LessonNavigator {
             difficultyEl.querySelectorAll('.dot').forEach((dot, i) => {
                 dot.classList.toggle('active', i < preset.difficulty);
             });
+            const level = preset.difficulty || 1;
+            difficultyEl.title = level === 1 ? 'Dificultad: Básica / Difficulty: Basic'
+                : level === 2 ? 'Dificultad: Intermedia / Difficulty: Intermediate'
+                : 'Dificultad: Avanzada / Difficulty: Advanced';
         }
     }
 
@@ -132,10 +140,10 @@ export class LessonNavigator {
                     }
                     break;
                 case 'r': case 'R':
-                    appEvents.emit('resetControls');
+                    if (this.onResetControls) this.onResetControls();
                     break;
                 case 'Escape':
-                    appEvents.emit('escapeKey');
+                    if (this.onEscapeKey) this.onEscapeKey();
                     break;
                 default: {
                     const idx = parseInt(e.key) - 1;

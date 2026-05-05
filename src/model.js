@@ -2,6 +2,7 @@ import { Group, MeshStandardMaterial, Mesh, CylinderGeometry, SphereGeometry, Co
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { appEvents } from './utils/events.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
+import { localizeValue } from './localization.js';
 
 // ====== Model registry — add more GLB models here ======
 export const DEFAULT_MODEL_ID = 'virtual_room';
@@ -79,14 +80,6 @@ export const MODEL_REGISTRY = [
 ];
 
 const matNormalScale = new Vector2(0.8, 0.8);
-
-function localizeValue(value, lang) {
-    const normalized = normalizeLanguage(lang);
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        return value[normalized] || value[DEFAULT_LANGUAGE] || value.en || value.es || value;
-    }
-    return value;
-}
 
 function localizeModelEntry(model, lang) {
     return {

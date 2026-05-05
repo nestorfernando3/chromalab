@@ -1,5 +1,20 @@
 import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
 
+/**
+ * Localize a bilingual value object to a string.
+ * @param {string|Object} value - Raw value or { es, en, ... } object
+ * @param {string} lang - Target language code
+ * @returns {string} Localized string
+ */
+export function localizeValue(value, lang = DEFAULT_LANGUAGE) {
+    if (value == null) return '';
+    if (typeof value !== 'object' || Array.isArray(value)) {
+        return value;
+    }
+    const normalized = normalizeLanguage(lang);
+    return value[normalized] || value[DEFAULT_LANGUAGE] || value.en || value.es || value;
+}
+
 const COPY = {
     es: {
         page: {
@@ -100,6 +115,46 @@ const COPY = {
             by: 'Desarrollado por',
             for: 'Para uso libre dentro de la'
         },
+        mission: {
+            nowLabel: 'Ahora',
+            completeLabel: 'Completado'
+        },
+        sceneFeedback: {
+            applied: 'Aplicado',
+            colorApplied: 'Color aplicado a la escena',
+            backgroundChanged: 'Fondo cambiado',
+            stepCompleted: 'Paso completado'
+        },
+        mobileNav: {
+            lab: 'Laboratorio',
+            lesson: 'Lección',
+            controls: 'Controles',
+            evidence: 'Evidencia'
+        },
+        completion: {
+            lessonComplete: '¡Lección completada!',
+            savedEvidence: 'Evidencia guardada',
+            nextLesson: 'Siguiente lección',
+            exportEvidence: 'Exportar evidencia'
+        },
+        response: {
+            title: 'Tu Observación',
+            placeholder: 'Escribe tu observación aquí...',
+            saving: 'Guardando...',
+            saved: 'Guardado localmente',
+            currentValues: 'Paleta actual:',
+            exportBtn: 'Exportar evidencia',
+            copyBtn: 'Copiar resumen',
+            exportEmpty: 'No hay evidencia para exportar.',
+            noEvidence: 'No hay evidencia aún. Completa los pasos de la lección.',
+            copied: 'Resumen copiado al portapapeles',
+            lessonCompleteLabel: 'Lección completada',
+            evidencePalette: 'Paleta de colores',
+            evidenceObservation: 'Observación escrita',
+            evidenceScene: 'Estado de la escena',
+            nextLessonBtn: 'Siguiente lección',
+            exportEvidenceBtn: 'Exportar evidencia'
+        },
         status: {
             screenshotSaved: 'Captura guardada',
             screenshotFailed: 'No se pudo guardar la captura',
@@ -114,38 +169,7 @@ const COPY = {
             harmony: 'Armonía',
             applyToLight: 'Aplicar a luz principal',
             applyToBackground: 'Aplicar a fondo',
-            valueNote: 'Valor: claridad del color. Exposición: brillo global de la cámara.'
-        },
-        checklist: {
-            title: 'Pasos de la lección',
-            required: 'Obligatorio',
-            complete: 'completado',
-            lessonDone: '¡Lección completada! Puedes pasar a la siguiente.',
-            labels: {
-                'adjust-hue': 'Cambiar el matiz',
-                'adjust-saturation': 'Cambiar la saturación',
-                'adjust-value': 'Cambiar el valor',
-                'apply-color': 'Aplicar color a la escena',
-                'assign-palette': 'Asignar paleta a luces',
-                'write-observation': 'Escribir observación',
-                'identify-complement': 'Identificar color complementario',
-                'adjust-intensity': 'Ajustar intensidad de la luz',
-                'add-light': 'Agregar una luz',
-                'take-screenshot': 'Tomar captura',
-                'compare-versions': 'Comparar versiones',
-                'justify-choice': 'Justificar elección'
-            }
-        },
-        response: {
-            title: 'Tu Observación',
-            placeholder: 'Escribe lo que descubriste al experimentar...',
-            saving: 'Guardando...',
-            saved: 'Guardado localmente',
-            currentValues: 'Paleta actual:',
-            exportBtn: 'Exportar evidencia',
-            copyBtn: 'Copiar resumen',
-            exportEmpty: 'No hay evidencia para exportar.',
-            copied: 'Resumen copiado al portapapeles'
+            valueNote: 'Valor cambia el color. Exposición cambia toda la escena.'
         },
         goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.'
     },
@@ -248,6 +272,46 @@ const COPY = {
             by: 'Developed by',
             for: 'Free use within'
         },
+        mission: {
+            nowLabel: 'Now',
+            completeLabel: 'Complete'
+        },
+        sceneFeedback: {
+            applied: 'Applied',
+            colorApplied: 'Color applied to scene',
+            backgroundChanged: 'Background changed',
+            stepCompleted: 'Step completed'
+        },
+        mobileNav: {
+            lab: 'Lab',
+            lesson: 'Lesson',
+            controls: 'Controls',
+            evidence: 'Evidence'
+        },
+        completion: {
+            lessonComplete: 'Lesson complete!',
+            savedEvidence: 'Evidence saved',
+            nextLesson: 'Next lesson',
+            exportEvidence: 'Export evidence'
+        },
+        response: {
+            title: 'Your Observation',
+            placeholder: 'Write your observation here...',
+            saving: 'Saving...',
+            saved: 'Saved locally',
+            currentValues: 'Current palette:',
+            exportBtn: 'Export evidence',
+            copyBtn: 'Copy summary',
+            exportEmpty: 'No evidence to export.',
+            noEvidence: 'No evidence yet. Complete the lesson steps.',
+            copied: 'Summary copied to clipboard',
+            lessonCompleteLabel: 'Lesson completed',
+            evidencePalette: 'Color palette',
+            evidenceObservation: 'Written observation',
+            evidenceScene: 'Scene state',
+            nextLessonBtn: 'Next lesson',
+            exportEvidenceBtn: 'Export evidence'
+        },
         status: {
             screenshotSaved: 'Screenshot saved',
             screenshotFailed: 'Could not save screenshot',
@@ -262,38 +326,7 @@ const COPY = {
             harmony: 'Harmony',
             applyToLight: 'Apply to key light',
             applyToBackground: 'Apply to background',
-            valueNote: 'Value: clarity of the color. Exposure: global brightness of the camera.'
-        },
-        checklist: {
-            title: 'Lesson steps',
-            required: 'Required',
-            complete: 'complete',
-            lessonDone: 'Lesson completed! You can move on to the next one.',
-            labels: {
-                'adjust-hue': 'Change the hue',
-                'adjust-saturation': 'Change the saturation',
-                'adjust-value': 'Change the value',
-                'apply-color': 'Apply color to the scene',
-                'assign-palette': 'Assign palette to lights',
-                'write-observation': 'Write an observation',
-                'identify-complement': 'Identify the complementary color',
-                'adjust-intensity': 'Adjust light intensity',
-                'add-light': 'Add a light',
-                'take-screenshot': 'Take a screenshot',
-                'compare-versions': 'Compare versions',
-                'justify-choice': 'Justify your choice'
-            }
-        },
-        response: {
-            title: 'Your Observation',
-            placeholder: 'Write what you discovered while experimenting...',
-            saving: 'Saving...',
-            saved: 'Saved locally',
-            currentValues: 'Current palette:',
-            exportBtn: 'Export evidence',
-            copyBtn: 'Copy summary',
-            exportEmpty: 'No evidence to export.',
-            copied: 'Summary copied to clipboard'
+            valueNote: 'Value changes the color. Exposure changes the whole scene.'
         },
         goLabDescription: 'Interactive lab for learning color theory through chromatic exploration and 3D simulation.'
     }

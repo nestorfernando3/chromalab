@@ -125,11 +125,6 @@ export class PaletteControls {
             btnApplyLight.textContent = copy.applyToLight;
             btnApplyLight.addEventListener('click', () => {
                 this.colorSystem.applyToLight(keyLight.id, this.lightingSystem);
-                appEvents.emit('palette:applied', {
-                    lessonId: preset.id,
-                    target: keyLight.id,
-                    colors: [this.colorSystem.baseColor]
-                });
             });
             actions.appendChild(btnApplyLight);
         }
@@ -139,8 +134,17 @@ export class PaletteControls {
         btnApplyBg.textContent = copy.applyToBackground;
         btnApplyBg.addEventListener('click', () => {
             const color = this.colorSystem.baseColor;
-            appEvents.emit('background:changed', { lessonId: preset.id, color });
-            // Emit an event that main.js or UI can listen to for actual backdrop change
+            appEvents.emit('background:changed', {
+                lessonId: preset.id,
+                color,
+                source: 'palette-controls'
+            });
+            appEvents.emit('palette:applied', {
+                lessonId: preset.id,
+                target: 'background',
+                colors: [color],
+                source: 'palette-controls'
+            });
         });
         actions.appendChild(btnApplyBg);
 
@@ -150,13 +154,16 @@ export class PaletteControls {
     _renderSlider(def, lang) {
         const row = document.createElement('div');
         row.className = 'control-row compact';
+        const labelId = `label-${def.id}`;
 
         const label = document.createElement('span');
         label.className = 'control-label';
+        label.id = labelId;
         label.textContent = def.label;
 
         const valueSpan = document.createElement('span');
         valueSpan.className = 'control-value';
+        valueSpan.id = `val-${def.id}`;
         valueSpan.textContent = def.value + def.unit;
 
         const slider = document.createElement('input');
@@ -166,10 +173,15 @@ export class PaletteControls {
         slider.max = def.max;
         slider.step = def.step;
         slider.value = def.value;
+        slider.setAttribute('aria-labelledby', labelId);
+        slider.setAttribute('aria-valuenow', def.value);
+        slider.setAttribute('aria-valuemin', def.min);
+        slider.setAttribute('aria-valuemax', def.max);
         slider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             def.setter(val);
             valueSpan.textContent = Math.round(val) + def.unit;
+            slider.setAttribute('aria-valuenow', val);
             this._updatePreview();
         });
 

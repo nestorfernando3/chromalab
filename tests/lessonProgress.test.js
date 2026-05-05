@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LessonProgressEngine } from '../src/lessonProgress.js';
 import { appEvents } from '../src/utils/events.js';
 
+if (typeof localStorage === 'undefined' || typeof localStorage.setItem !== 'function') {
+    const store = {};
+    global.localStorage = {
+        getItem: (key) => store[key] || null,
+        setItem: (key, value) => { store[key] = String(value); },
+        removeItem: (key) => { delete store[key]; },
+        clear: () => { Object.keys(store).forEach(key => delete store[key]); }
+    };
+}
+
 describe('LessonProgressEngine', () => {
     let engine;
     let listeners = {};
