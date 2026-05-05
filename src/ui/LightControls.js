@@ -47,6 +47,9 @@ export class LightControls {
 
         this.renderLightControls(light);
         this.renderLightSelector(preset, light.id);
+
+        // Emit light:selected event for UI/UX layer
+        appEvents.emit('light:selected', { light, lessonId: preset.id });
     }
 
     /** Sync slider values when the light is dragged in 3D or reset */

@@ -25,6 +25,13 @@ describe('presets', () => {
         expect(preset).toHaveProperty('harmonyType');
         expect(preset).toHaveProperty('saturation');
         expect(preset).toHaveProperty('lightness');
+        expect(preset).toHaveProperty('value');
+        expect(preset).toHaveProperty('colorModel');
+        expect(preset).toHaveProperty('learningControls');
+        expect(preset).toHaveProperty('paletteTargets');
+        expect(preset).toHaveProperty('checklist');
+        expect(preset).toHaveProperty('reflectionPrompt');
+        expect(preset).toHaveProperty('completionRules');
     });
 
     it('getPreset("complementary", "en") returns English text', () => {

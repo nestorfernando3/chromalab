@@ -1,25 +1,20 @@
 import { defineConfig } from 'vite';
-import { visualizer } from 'rollup-plugin-visualizer';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ command }) => ({
     base: command === 'build' ? '/chromalab/' : '/',
     plugins: [
-        visualizer({
-            filename: 'bundle-stats.html',
-            open: false,
-            gzipSize: true,
-            brotliSize: true
-        }),
         VitePWA({
             registerType: 'autoUpdate',
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,json}']
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+                globIgnores: ['**/*.bin', '**/*.gltf', '**/*.jpg', '**/*.swf']
             }
         })
     ],
     build: {
-        target: 'esnext'
+        target: 'esnext',
+        chunkSizeWarningLimit: 1000
     },
     test: {
         environment: 'node',

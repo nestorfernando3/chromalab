@@ -3,14 +3,7 @@
  * adding, removing and listing lights in the sandbox preset.
  */
 import { createElement, clearChildren } from '../utils/dom.js';
-import { getAppCopy } from '../localization.js';
-
-function localizeValue(value, lang) {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        return value[lang] || value.es || value.en || '';
-    }
-    return value || '';
-}
+import { getAppCopy, localizeValue } from '../localization.js';
 
 export class SandboxManager {
     /**

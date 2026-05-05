@@ -8,7 +8,7 @@
  *  - ScreenshotExporter → PNG download
  */
 import { getPresetNames, getPreset, localizePreset } from './presets.js';
-import { switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
+import { DEFAULT_MODEL_ID, switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
 import { setupOnboarding } from './onboarding.js';
 import { renderDiagram } from './diagram.js';
 import { clearChildren } from './utils/dom.js';
@@ -19,6 +19,14 @@ import { SandboxManager } from './ui/SandboxManager.js';
 import { ScreenshotExporter } from './ui/ScreenshotExporter.js';
 import { applyStaticTranslations, getAppCopy } from './localization.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage, storeLanguage } from './runtime.js';
+import { LessonMission } from './ui/LessonMission.js';
+import { LessonChecklist } from './ui/LessonChecklist.js';
+import { StudentResponse } from './ui/StudentResponse.js';
+import { PaletteControls } from './ui/PaletteControls.js';
+import { ColorSystem } from './colorSystem.js';
+import { LessonProgressEngine } from './lessonProgress.js';
+import { EvidenceStore } from './evidenceStore.js';
+import { LessonSession } from './lessonSession.js';
 
 const UI_STORAGE_KEYS = {
     controlsCollapsed: 'chromaLab.controlsCollapsed',
@@ -34,25 +42,45 @@ export class UI {
         this.embedMode = Boolean(options.embedMode);
         this.initialLessonId = options.lessonId || null;
         this.lang = normalizeLanguage(options.language || DEFAULT_LANGUAGE);
-        this.currentPreset = null;
-        this.currentPresetIndex = 0;
-        this.activeModelId = getModelRegistry().at(0)?.id || 'head';
+        this._onPresetLoaded = options.onPresetLoaded || null;
+        this.session = new LessonSession();
+        this.session.onChange((type, data) => {
+            if (type === 'lessonCompleted') {
+                this._showToast('status.lessonCompleted');
+            } else if (type === 'lessonLoaded' && data?.preset) {
+                this._onSessionLessonLoaded(data.preset);
+            }
+        });
+        this.activeModelId = DEFAULT_MODEL_ID;
         this.activeBackgroundColor = getBackgroundPresets().at(0)?.color || '#080810';
         this.controlsCollapsed = this._readControlsCollapsed();
-        this.completedLessonIds = new Set(this._readCompletedLessons());
         this._toastTimer = null;
         this._bgCustomColorInput = null;
         this._bgCustomColorHandler = null;
+        this.exploreMode = false;
+        this._currentLayout = this._detectLayoutMode();
+        this._highlightTimeout = null;
 
-        const presetNames = getPresetNames();
+        const presetNames = this.session.presetNames;
 
         // ── Sub-modules ──────────────────────────────────────────────────────
 
-        this.navigator = new LessonNavigator(presetNames, (index) => this.loadLesson(index));
+        this.navigator = new LessonNavigator(
+            presetNames,
+            (index) => this.loadLesson(index),
+            {
+                onResetControls: options.onResetControls || null,
+                onEscapeKey: () => {
+                    document.getElementById('onboarding')?.classList.add('hidden');
+                    this._setMobilePanel('teach', false);
+                    this._setMobilePanel('controls', false);
+                }
+            }
+        );
 
         this.lightControls = new LightControls(
             lightingSystem,
-            () => this.currentPreset,
+            () => this.session.currentPreset,
             () => this.lang,
             () => this._updateDiagram(),
             (newConfig) => this._onSandboxChange(newConfig)
@@ -60,13 +88,24 @@ export class UI {
 
         this.sandboxManager = new SandboxManager(
             lightingSystem,
-            () => this.currentPreset,
+            () => this.session.currentPreset,
             () => this.lang,
             (newConfig) => this._onSandboxChange(newConfig)
         );
 
         this.screenshotExporter = new ScreenshotExporter(
-            () => this.currentPreset?.id
+            () => this.session.currentPreset?.id
+        );
+
+        this.progressEngine = new LessonProgressEngine();
+        this.evidenceStore = new EvidenceStore();
+        this.colorSystem = null;
+        this.paletteControls = null;
+        this.lessonChecklist = new LessonChecklist(() => this.lang, this.progressEngine);
+        this.studentResponse = new StudentResponse(() => this.lang, this.evidenceStore, this.progressEngine);
+        this.lessonMission = new LessonMission(
+            () => this.lang,
+            (lessonId) => this.progressEngine.getCompletedCriteria(lessonId)
         );
 
         // ── Init ─────────────────────────────────────────────────────────────
@@ -80,6 +119,11 @@ export class UI {
         this._applyControlsCollapsedState(this.controlsCollapsed, { persist: false });
         this._syncMobilePanelButtons();
 
+        this._setupExploreModeToggle();
+        this._setupControlGroupToggle();
+        this._updateLayoutMode();
+        this._setupLayoutResizeListener();
+
         setupOnboarding(() => this.loadInitialLesson(), { skipAutoStart: this.embedMode });
         if (this.embedMode) {
             document.getElementById('onboarding')?.classList.add('hidden');
@@ -91,7 +135,7 @@ export class UI {
     // ── Lesson Loading ────────────────────────────────────────────────────────
 
     loadInitialLesson() {
-        const presetNames = getPresetNames();
+        const presetNames = this.session.presetNames;
         const fallback = presetNames[0];
         const targetId = this.initialLessonId && presetNames.includes(this.initialLessonId)
             ? this.initialLessonId
@@ -101,28 +145,19 @@ export class UI {
     }
 
     async loadLesson(index) {
-        const presetNames = getPresetNames();
-        if (index < 0 || index >= presetNames.length) return;
+        const preset = this.session.loadLesson(index);
+        if (!preset) return;
 
-        const previousId = this.currentPreset?.id || null;
-        const nextPresetId = presetNames[index];
-        if (previousId && previousId !== nextPresetId) {
-            this._markLessonCompleted(previousId);
-        }
-
-        this.currentPresetIndex = index;
-        this.navigator.index = index;
-        const rawPreset = getPreset(nextPresetId);
-        this.currentPreset = JSON.parse(JSON.stringify(rawPreset));
-
-
-        this.lightingSystem.loadPreset(this.currentPreset);
+        this.navigator.index = this.session.currentIndex;
+        this.lightingSystem.loadPreset(preset);
         this._renderCurrentLesson({ collapseControls: this.controlsCollapsed, preserveSelection: false });
         if (this._isMobileLayout()) {
             this._setMobilePanel('teach', true);
             this._setMobilePanel('controls', false);
         }
-        appEvents.emit('presetLoaded', this.currentPreset);
+        if (this._onPresetLoaded) {
+            this._onPresetLoaded(preset);
+        }
     }
 
     refreshCurrentLesson({ preserveSelection = true } = {}) {
@@ -151,13 +186,63 @@ export class UI {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
+    _onSessionLessonLoaded(preset) {
+        if (!preset) return;
+        if (this.paletteControls) {
+            this.paletteControls.destroy();
+            this.paletteControls = null;
+        }
+        if (this.studentResponse) {
+            this.studentResponse.destroy();
+        }
+        this.colorSystem = new ColorSystem({ preset });
+        this.paletteControls = new PaletteControls(
+            this.colorSystem,
+            () => this.session.currentPreset,
+            () => this.lang,
+            this.lightingSystem
+        );
+        this.progressEngine.registerLesson(
+            preset.id,
+            preset.checklist || [],
+            preset.completionRules || {}
+        );
+        this.evidenceStore = new EvidenceStore();
+
+        appEvents.on('palette:applied', (payload) => {
+            if (payload.lessonId === preset.id) {
+                this.evidenceStore.saveColorState(payload.lessonId, {
+                    hue: this.colorSystem?.hue,
+                    saturation: this.colorSystem?.saturation,
+                    value: this.colorSystem?.value,
+                    harmonyType: this.colorSystem?.harmonyType
+                });
+            }
+        });
+
+        appEvents.on('lesson:criteriaCompleted', (payload) => {
+            if (payload.lessonId === preset.id) {
+                const completed = this.progressEngine.getCompletedCriteria(payload.lessonId);
+                this.evidenceStore.saveCriteria(payload.lessonId, completed);
+            }
+        });
+
+        appEvents.on('screenshotTaken', (payload) => {
+            if (payload?.lessonId) {
+                this.evidenceStore.registerScreenshot(payload.lessonId, payload.filename, 'evidence');
+            }
+        });
+    }
+
     _getLocalizedCurrentPreset() {
-        if (!this.currentPreset) return null;
-        return localizePreset(this.currentPreset, this.lang);
+        const preset = this.session.currentPreset;
+        if (!preset) return null;
+        return localizePreset(preset, this.lang);
     }
 
     _renderCurrentLesson({ collapseControls = this.controlsCollapsed, preserveSelection = false } = {}) {
-        if (!this.currentPreset) return;
+        const preset = this.session.currentPreset;
+        if (!preset) return;
 
         const localizedPreset = this._getLocalizedCurrentPreset();
         const selectedLightId = preserveSelection ? this.lightControls.selectedLightId : null;
@@ -165,15 +250,34 @@ export class UI {
             ? localizedPreset.lights.find(light => light.id === selectedLightId)
             : null;
 
-        this.navigator.index = this.currentPresetIndex;
-        this.navigator.updateProgress(this.currentPresetIndex, this.completedLessonIds.size + 1);
-        this.navigator.updateLessonHeader(localizedPreset, this.currentPresetIndex);
+        const currentIndex = this.session.currentIndex;
+        this.navigator.index = currentIndex;
+        this.navigator.updateProgress(currentIndex, this.session.getCompletedIds().size + 1);
+        this.navigator.updateLessonHeader(localizedPreset, currentIndex);
         this.navigator.updateGoalSection(localizedPreset);
         this.navigator.updatePracticeSection(localizedPreset);
         this.navigator.updateObserveSection(localizedPreset);
-        this.navigator.updateNavigation(this.currentPresetIndex, this._getCompletedLessonIndexes());
+        this.navigator.updateNavigation(currentIndex, this.session.getCompletedIndexes());
 
-        this.lightingSystem.loadPreset(this.currentPreset);
+        // Render lesson mission
+        this.lessonMission.render(preset?.id, preset?.checklist || []);
+
+        // Render pedagogical palette controls
+        if (this.paletteControls) {
+            this.paletteControls.render();
+        }
+
+        // Render lesson checklist
+        if (this.lessonChecklist) {
+            this.lessonChecklist.render(preset?.id, preset?.checklist || []);
+        }
+
+        // Render student response form
+        if (this.studentResponse) {
+            this.studentResponse.render(preset?.id, preset);
+        }
+
+        this.lightingSystem.loadPreset(preset);
 
         this._updateDiagram();
         this._updateLightsOverview();
@@ -192,8 +296,15 @@ export class UI {
 
         // Toggle sandbox toolbar visibility
         const toolbar = document.getElementById('sandbox-toolbar');
-        if (toolbar) toolbar.classList.toggle('hidden', !this.currentPreset.isSandbox);
+        if (toolbar) toolbar.classList.toggle('hidden', !preset.isSandbox);
         this.sandboxManager.setupSandboxButtons();
+
+        // Apply mode visibility & update light context
+        this._applyModeVisibility();
+        this._updateSelectedLightContext(selectedLight || null);
+
+        // Update palette strip
+        this._updatePaletteStrip();
     }
 
     _collapseEmbedControls() {
@@ -202,20 +313,299 @@ export class UI {
 
     _updateDiagram() {
         const svg = document.getElementById('lighting-diagram');
-        if (!svg || !this.currentPreset) return;
+        const preset = this.session.currentPreset;
+        if (!svg || !preset) return;
         renderDiagram(this._getLocalizedCurrentPreset(), svg, this.lang);
     }
 
     _updateLightsOverview() {
-        if (!this.currentPreset) return;
+        const preset = this.session.currentPreset;
+        if (!preset) return;
         this.sandboxManager.renderLightsOverview(
             (light) => this.lightControls.selectLight(light),
-            this.currentPreset?.isSandbox
+            preset?.isSandbox
         );
     }
 
+    // ── Explore Mode Toggle ──────────────────────────────────────────────────
+
+    _setupExploreModeToggle() {
+        const guidedBtn = document.getElementById('mode-guided');
+        const exploreBtn = document.getElementById('mode-explore');
+        if (!guidedBtn || !exploreBtn) return;
+
+        const setMode = (explore) => {
+            this.exploreMode = explore;
+            guidedBtn.classList.toggle('active', !explore);
+            exploreBtn.classList.toggle('active', explore);
+            guidedBtn.setAttribute('aria-pressed', explore ? 'false' : 'true');
+            exploreBtn.setAttribute('aria-pressed', explore ? 'true' : 'false');
+            document.body.classList.toggle('explore-mode', explore);
+            this._applyModeVisibility();
+        };
+
+        guidedBtn.addEventListener('click', () => setMode(false));
+        exploreBtn.addEventListener('click', () => setMode(true));
+    }
+
+    // ── Control Group Toggle ──────────────────────────────────────────────────
+
+    _setupControlGroupToggle() {
+        document.querySelectorAll('.control-group-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+                const group = header.closest('.control-group');
+                if (!group) return;
+                group.classList.toggle('collapsed');
+                header.setAttribute('aria-expanded', !group.classList.contains('collapsed'));
+            });
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+        });
+    }
+
+    // ── Layout Mode Detection ─────────────────────────────────────────────────
+
+    _detectLayoutMode() {
+        if (typeof window === 'undefined') return 'desktop-wide';
+        const w = window.innerWidth;
+        if (w <= 560) return 'mobile';
+        if (w <= 960) return 'tablet';
+        if (w <= 1280) return 'desktop-compact';
+        return 'desktop-wide';
+    }
+
+    _updateLayoutMode() {
+        const mode = this._detectLayoutMode();
+        this._currentLayout = mode;
+        document.body.classList.remove('layout-desktop-wide', 'layout-desktop-compact', 'layout-tablet', 'layout-mobile');
+        document.body.classList.add(`layout-${mode}`);
+    }
+
+    _setupLayoutResizeListener() {
+        let timer;
+        window.addEventListener('resize', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => this._updateLayoutMode(), 150);
+        });
+    }
+
+    // ── Mode Visibility ──────────────────────────────────────────────────────
+
+    _applyModeVisibility() {
+        const cgPalette = document.getElementById('cg-palette');
+        const cgLights = document.getElementById('cg-lights');
+        const cgEnvironment = document.getElementById('cg-environment');
+        const cgModel = document.getElementById('cg-model');
+
+        if (this.exploreMode) {
+            // Expand all groups in explore mode
+            [cgPalette, cgLights, cgEnvironment, cgModel].forEach(g => {
+                if (g) {
+                    g.classList.remove('collapsed');
+                    const header = g.querySelector('.control-group-header');
+                    if (header) header.setAttribute('aria-expanded', 'true');
+                }
+            });
+        } else {
+            // In guided mode, collapse environment by default; keep model expanded
+            [cgEnvironment].forEach(g => {
+                if (g) {
+                    g.classList.add('collapsed');
+                    const header = g.querySelector('.control-group-header');
+                    if (header) header.setAttribute('aria-expanded', 'false');
+                }
+            });
+            [cgPalette, cgLights].forEach(g => {
+                if (g) {
+                    g.classList.remove('collapsed');
+                    const header = g.querySelector('.control-group-header');
+                    if (header) header.setAttribute('aria-expanded', 'true');
+                }
+            });
+        }
+    }
+
+    // ── Selected Light Context ────────────────────────────────────────────────
+
+    _updateSelectedLightContext(light) {
+        const container = document.getElementById('selected-light-context');
+        const dot = document.getElementById('slc-dot');
+        const label = document.getElementById('slc-label');
+        const role = document.getElementById('slc-role');
+        if (!container) return;
+
+        if (light) {
+            container.classList.add('visible');
+            if (dot) dot.style.backgroundColor = light.color || '#fff';
+            if (label) label.textContent = light.name || '';
+            if (role) role.textContent = light.role || '';
+        } else {
+            container.classList.remove('visible');
+        }
+    }
+
+    // ── Control Highlighting ──────────────────────────────────────────────────
+
+    _highlightControl(controlId) {
+        if (this._highlightTimeout) {
+            clearTimeout(this._highlightTimeout);
+            this._highlightTimeout = null;
+        }
+        // Remove existing highlights
+        document.querySelectorAll('.control-group.highlighted').forEach(el => {
+            el.classList.remove('highlighted');
+        });
+
+        if (!controlId) return;
+
+        const target = document.getElementById(controlId);
+        if (target) {
+            target.classList.add('highlighted');
+            // Ensure the group is expanded
+            target.classList.remove('collapsed');
+            const header = target.querySelector('.control-group-header');
+            if (header) header.setAttribute('aria-expanded', 'true');
+        }
+
+        // Auto-clear after 3s
+        this._highlightTimeout = setTimeout(() => {
+            document.querySelectorAll('.control-group.highlighted').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+        }, 3000);
+    }
+
+    _onActiveStepChanged(payload) {
+        if (!payload || !payload.activeStepId) {
+            this._highlightControl(null);
+            return;
+        }
+
+        // Map step IDs to control group IDs
+        const stepControlMap = {
+            'adjust-hue': 'cg-palette',
+            'adjust-saturation': 'cg-palette',
+            'adjust-value': 'cg-palette',
+            'apply-color': 'cg-palette',
+            'assign-palette': 'cg-palette',
+            'write-observation': null,
+            'identify-complement': 'cg-palette',
+            'adjust-intensity': 'cg-lights',
+            'add-light': 'cg-lights',
+            'take-screenshot': null,
+            'compare-versions': 'cg-palette',
+            'justify-choice': null
+        };
+
+        const controlId = stepControlMap[payload.activeStepId] || null;
+        this._highlightControl(controlId);
+    }
+
+    // ── Scene Feedback ────────────────────────────────────────────────────────
+
+    _showSceneFeedback(msg) {
+        const container = document.getElementById('scene-feedback-message');
+        const parent = document.getElementById('scene-feedback');
+        if (!container || !parent) return;
+
+        container.textContent = msg;
+        container.removeAttribute('aria-hidden');
+        parent.classList.add('visible');
+
+        // Re-trigger animation
+        container.style.animation = 'none';
+        requestAnimationFrame(() => {
+            container.style.animation = '';
+        });
+
+        clearTimeout(this._feedbackTimer);
+        this._feedbackTimer = setTimeout(() => {
+            container.setAttribute('aria-hidden', 'true');
+            parent.classList.remove('visible');
+        }, 2500);
+    }
+
+    _getSceneFeedbackMessage(payload) {
+        const copy = getAppCopy(this.lang);
+        if (!payload) return '';
+
+        if (payload.type === 'color-applied') {
+            return copy.sceneFeedback?.colorApplied || 'Color aplicado a la escena';
+        }
+        if (payload.type === 'background-changed') {
+            return copy.sceneFeedback?.backgroundChanged || 'Fondo cambiado';
+        }
+        if (payload.type === 'step-completed') {
+            return copy.sceneFeedback?.stepCompleted || 'Paso completado';
+        }
+        return copy.sceneFeedback?.applied || 'Aplicado';
+    }
+
+    // ── Palette Strip ─────────────────────────────────────────────────────────
+
+    _updatePaletteStrip() {
+        const strip = document.getElementById('palette-strip');
+        if (!strip) return;
+
+        const preset = this.session.currentPreset;
+        if (!preset) {
+            strip.classList.remove('visible');
+            return;
+        }
+
+        const colors = this.colorSystem?.palette?.length
+            ? this.colorSystem.palette
+            : (preset.lights || []).map(l => l.color).filter(Boolean);
+
+        if (colors.length === 0) {
+            strip.classList.remove('visible');
+            return;
+        }
+
+        strip.classList.add('visible');
+
+        // Only re-render if colors changed
+        const key = colors.join(',');
+        if (strip.dataset.colorKey === key) return;
+        strip.dataset.colorKey = key;
+
+        while (strip.firstChild) strip.removeChild(strip.firstChild);
+
+        const copy = getAppCopy(this.lang);
+        colors.forEach((c, index) => {
+            const swatch = document.createElement('button');
+            swatch.type = 'button';
+            swatch.className = 'palette-strip-swatch';
+            swatch.style.backgroundColor = c;
+            swatch.title = c;
+            swatch.setAttribute(
+                'aria-label',
+                `${copy.palette?.palette || 'Paleta'} ${index + 1}: ${c}`
+            );
+            swatch.addEventListener('click', () => {
+                appEvents.emit('background:changed', {
+                    lessonId: preset.id,
+                    color: c,
+                    source: 'palette-strip'
+                });
+                appEvents.emit('palette:applied', {
+                    lessonId: preset.id,
+                    target: 'background',
+                    colors: [c],
+                    source: 'palette-strip'
+                });
+            });
+            strip.appendChild(swatch);
+        });
+    }
+
     _onSandboxChange(newConfig) {
-        if (!this.currentPreset) return;
+        const preset = this.session.currentPreset;
+        if (!preset) return;
 
         this._updateLightsOverview();
         this._updateDiagram();
@@ -277,8 +667,52 @@ export class UI {
         appEvents.on('screenshotTaken', () => this._showToast('status.screenshotSaved'));
         appEvents.on('screenshotFailed', () => this._showToast('status.screenshotFailed'));
         appEvents.on('tipRestored', () => this._showToast('status.tipRestored'));
-        appEvents.on('escapeKey', () => {
-            document.getElementById('onboarding')?.classList.add('hidden');
+
+        // ── UI/UX Event Listeners ───────────────────────────────────────────
+        appEvents.on('lesson:activeStepChanged', (payload) => this._onActiveStepChanged(payload));
+
+        appEvents.on('light:selected', (payload) => {
+            if (payload?.light) {
+                this._updateSelectedLightContext(payload.light);
+            }
+        });
+
+        appEvents.on('lesson:nextRequested', () => {
+            const next = Math.min(this.session.currentIndex + 1, this.session.totalCount - 1);
+            this.loadLesson(next);
+        });
+
+        // Scene feedback on palette applied
+        appEvents.on('palette:applied', (payload) => {
+            this._showSceneFeedback(this._getSceneFeedbackMessage(payload));
+            this._updatePaletteStrip();
+        });
+
+        appEvents.on('palette:previewChanged', () => {
+            this._updatePaletteStrip();
+        });
+
+        // Scene feedback on background changed
+        appEvents.on('background:changed', (payload) => {
+            if (payload?.color) {
+                this._applyBackgroundColor(payload.color);
+                this._showSceneFeedback(this._getSceneFeedbackMessage({
+                    ...payload,
+                    type: payload.type || 'background-changed'
+                }));
+            }
+        });
+
+        // Close mobile panels on navigation
+        appEvents.on('lesson:activeStepChanged', () => {
+            if (this._isMobileLayout()) {
+                this._setMobilePanel('controls', false);
+                this._setMobilePanel('teach', false);
+            }
+        });
+
+        // Scrim click → close mobile panels
+        document.getElementById('app-scrim')?.addEventListener('click', () => {
             this._setMobilePanel('teach', false);
             this._setMobilePanel('controls', false);
         });
@@ -311,6 +745,7 @@ export class UI {
         presets.forEach(preset => {
             const btn = document.createElement('button');
             btn.className = 'bg-swatch';
+            btn.dataset.color = preset.color;
             btn.style.backgroundColor = preset.color;
             btn.title = preset.name;
             btn.setAttribute('aria-label', `${preset.name}`);
@@ -318,11 +753,7 @@ export class UI {
                 btn.classList.add('active');
             }
             btn.addEventListener('click', () => {
-                this.activeBackgroundColor = preset.color;
-                setBackdropColor(this.scene, this.environment, preset.color);
-                const customInput = document.getElementById('bg-custom-color');
-                if (customInput) customInput.value = preset.color;
-                container.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+                this._applyBackgroundColor(preset.color);
                 btn.classList.add('active');
             });
             container.appendChild(btn);
@@ -336,13 +767,26 @@ export class UI {
 
             customInput.value = this.activeBackgroundColor;
             this._bgCustomColorHandler = (e) => {
-                this.activeBackgroundColor = e.target.value;
-                setBackdropColor(this.scene, this.environment, e.target.value);
-                container.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+                this._applyBackgroundColor(e.target.value);
             };
             customInput.addEventListener('input', this._bgCustomColorHandler);
             this._bgCustomColorInput = customInput;
         }
+    }
+
+    _applyBackgroundColor(color) {
+        if (!color) return;
+        this.activeBackgroundColor = color;
+        setBackdropColor(this.scene, this.environment, color);
+
+        const customInput = document.getElementById('bg-custom-color');
+        if (customInput) customInput.value = color;
+
+        document.querySelectorAll('.bg-swatch').forEach((swatch) => {
+            swatch.classList.toggle('active', swatch.dataset.color === color);
+        });
+
+        appEvents.emit('requestRender');
     }
 
     _renderModelSelector() {
@@ -399,35 +843,8 @@ export class UI {
         if (persist) this._saveControlsCollapsed(this.controlsCollapsed);
     }
 
-    _readCompletedLessons() {
-        if (typeof localStorage === 'undefined') return [];
-        try {
-            const raw = localStorage.getItem(UI_STORAGE_KEYS.completedLessons);
-            const parsed = raw ? JSON.parse(raw) : [];
-            return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
-        } catch {
-            return [];
-        }
-    }
-
-    _saveCompletedLessons() {
-        if (typeof localStorage === 'undefined') return;
-        localStorage.setItem(UI_STORAGE_KEYS.completedLessons, JSON.stringify([...this.completedLessonIds]));
-    }
-
-    _markLessonCompleted(lessonId) {
-        if (!lessonId || this.completedLessonIds.has(lessonId)) return;
-        this.completedLessonIds.add(lessonId);
-        this._saveCompletedLessons();
-        this._showToast('status.lessonCompleted');
-    }
-
     _getCompletedLessonIndexes() {
-        const lessonIds = getPresetNames();
-        return lessonIds.reduce((indexes, id, index) => {
-            if (this.completedLessonIds.has(id)) indexes.push(index);
-            return indexes;
-        }, []);
+        return this.session.getCompletedIndexes();
     }
 
     _isMobileLayout() {

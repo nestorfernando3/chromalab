@@ -157,6 +157,40 @@ export function tetradicHues(hue, offset = 60) {
  * @param {number} l lightness 0-1
  * @returns {string[]} array of hex colors
  */
+export function hsvToRgb(h, s, v) {
+    const f = (n) => {
+        const k = (n + h / 60) % 6;
+        return v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
+    };
+    return { r: Math.round(f(5) * 255), g: Math.round(f(3) * 255), b: Math.round(f(1) * 255) };
+}
+
+export function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    if (max !== min) {
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+        else if (max === g) h = ((b - r) / d + 2) * 60;
+        else h = ((r - g) / d + 4) * 60;
+    }
+    return { h: Math.round(h), s: Math.round(s * 100) / 100, v: Math.round(v * 100) / 100 };
+}
+
+export function hsvToHex(h, s, v) {
+    const { r, g, b } = hsvToRgb(h, s, v);
+    return '#' + [r, g, b].map(c => Math.round(c).toString(16).padStart(2, '0')).join('');
+}
+
+export function hexToHsv(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return { h: 0, s: 0, v: 0 };
+    return rgbToHsv(rgb.r, rgb.g, rgb.b);
+}
+
 export function getHarmonyColors(baseHue, type, s = 0.7, l = 0.5) {
     let hues = [];
     switch (type) {
@@ -168,6 +202,19 @@ export function getHarmonyColors(baseHue, type, s = 0.7, l = 0.5) {
         default: hues = [baseHue];
     }
     return hues.map(h => hslToHex(((h % 360) + 360) % 360, s, l));
+}
+
+export function getHarmonyColorsHsv(baseHue, type, s = 0.7, v = 0.5) {
+    let hues = [];
+    switch (type) {
+        case 'complementary': hues = [baseHue, complementaryHue(baseHue)]; break;
+        case 'analogous': hues = analogousHues(baseHue); break;
+        case 'triadic': hues = triadicHues(baseHue); break;
+        case 'split': hues = splitComplementaryHues(baseHue); break;
+        case 'tetradic': hues = tetradicHues(baseHue); break;
+        default: hues = [baseHue];
+    }
+    return hues.map(h => hsvToHex(((h % 360) + 360) % 360, s, v));
 }
 
 /**

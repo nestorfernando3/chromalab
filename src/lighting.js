@@ -1,6 +1,7 @@
 import { SphereGeometry, RingGeometry, ConeGeometry, Plane, Vector3, Raycaster, Vector2, MathUtils, SpotLight, PointLight, RectAreaLight, Object3D, MeshBasicMaterial, Mesh, Group, DoubleSide, BufferGeometry, LineDashedMaterial, Line } from 'three';
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper.js';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
+import { localizeValue } from './localization.js';
 
 // Init RectAreaLight support
 RectAreaLightUniformsLib.init();
@@ -19,14 +20,7 @@ const DRAG_CLAMP_Y_MAX = 5.0;
 const DRAG_MAX_DISTANCE = 5; // Max distance from center before ignoring drag
 const DRAG_TIMEOUT_MS = 10000; // Auto-cancel drag after 10 seconds
 
-function valueForLang(value, lang) {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        return value[lang] || value.es || value.en || '';
-    }
-    return value || '';
-}
-
-function makeBilingualLabel(esText, enText) {
+function _makeBilingualLabel(esText, enText) {
     return { es: esText, en: enText };
 }
 
@@ -35,63 +29,73 @@ export class LightingSystem {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
-        this.lights = [];
-        this.helpers = [];
-        this.lightObjects = new Map();
-        this.helperMap = new Map();
+
+        // ── Internal state ───────────────────────────────────────────────────
+        // _state maps lightId -> { config, lightObject, helperData }
+        // This concentrates all light tracking in one place instead of
+        // scattering it across userData and multiple arrays.
+        this._state = new Map();
+        this.lights = [];           // Three.js light objects (kept for compat)
+        this.helpers = [];          // Helper groups + lines (kept for compat)
+        this.lightObjects = new Map(); // id -> Three.js light (kept for compat)
+        this.helperMap = new Map();    // id -> { group, line } (kept for compat)
         this.ambientLight = null;
         this.showHelpers = true;
 
-        // Drag state
-        this.isDragging = false;
-        this.draggedLight = null;
-        this.dragPlane = new Plane();
-        this.intersectionPoint = new Vector3();
-        this.raycaster = new Raycaster();
-        this.mouse = new Vector2();
+        // Drag state — internal implementation detail
+        this._drag = {
+            isDragging: false,
+            draggedLight: null,
+            plane: new Plane(),
+            intersection: new Vector3(),
+            raycaster: new Raycaster(),
+            mouse: new Vector2(),
+            timeout: null,
+            originalPosition: null
+        };
 
-        // Callbacks
+        // Callbacks — public seam for observers
         this.onLightDragStart = null;
         this.onLightDrag = null;
         this.onLightDragEnd = null;
         this.onChange = null;
 
-        this.setupDragControls();
+        this._setupDragControls();
     }
 
-    setupDragControls() {
+    _setupDragControls() {
         const canvas = this.renderer.domElement;
 
-        canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
-        canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-        canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
-        canvas.addEventListener('mouseleave', () => this.onMouseUp());
+        canvas.addEventListener('mousedown', (e) => this._onMouseDown(e));
+        canvas.addEventListener('mousemove', (e) => this._onMouseMove(e));
+        canvas.addEventListener('mouseup', (e) => this._onMouseUp(e));
+        canvas.addEventListener('mouseleave', () => this._onMouseUp());
 
         // Touch support
-        canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
-        canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
-        canvas.addEventListener('touchend', () => this.onMouseUp());
+        canvas.addEventListener('touchstart', (e) => this._onTouchStart(e), { passive: false });
+        canvas.addEventListener('touchmove', (e) => this._onTouchMove(e), { passive: false });
+        canvas.addEventListener('touchend', () => this._onMouseUp());
     }
 
-    updateMouse(e) {
+    _updateMouse(e) {
         const rect = this.renderer.domElement.getBoundingClientRect();
-        this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        this._drag.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        this._drag.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     }
 
-    getHelpersUnderMouse() {
-        this.raycaster.setFromCamera(this.mouse, this.camera);
+    _getHelpersUnderMouse() {
+        this._drag.raycaster.setFromCamera(this._drag.mouse, this.camera);
 
         const helperMeshes = this.helpers
             .filter(h => h.userData.type === 'helper' && h.visible)
             .flatMap(h => h.children);
 
-        return this.raycaster.intersectObjects(helperMeshes, true);
+        return this._drag.raycaster.intersectObjects(helperMeshes, true);
     }
 
-    onMouseDown(e) {
-        this.updateMouse(e);
-        const intersects = this.getHelpersUnderMouse();
+    _onMouseDown(e) {
+        this._updateMouse(e);
+        const intersects = this._getHelpersUnderMouse();
 
         if (intersects.length > 0) {
             e.preventDefault();
@@ -104,16 +108,16 @@ export class LightingSystem {
             }
 
             if (helper && helper.userData.light) {
-                this.startDrag(helper.userData.light);
+                this._startDrag(helper.userData.light);
             }
         }
     }
 
-    onTouchStart(e) {
+    _onTouchStart(e) {
         if (e.touches.length === 1) {
             const touch = e.touches[0];
-            this.updateMouse(touch);
-            const intersects = this.getHelpersUnderMouse();
+            this._updateMouse(touch);
+            const intersects = this._getHelpersUnderMouse();
 
             if (intersects.length > 0) {
                 e.preventDefault();
@@ -124,26 +128,19 @@ export class LightingSystem {
                 }
 
                 if (helper && helper.userData.light) {
-                    this.startDrag(helper.userData.light);
+                    this._startDrag(helper.userData.light);
                 }
             }
         }
     }
 
-    startDrag(light) {
-        this.isDragging = true;
-        this.draggedLight = light;
-
-        // Save original position for rollback if drag goes wrong
-        this._dragOriginalPosition = light.position.clone();
+    _startDrag(light) {
+        this._drag.isDragging = true;
+        this._drag.draggedLight = light;
+        this._drag.originalPosition = light.position.clone();
 
         // Create a plane at the light's height facing the camera
-        const cameraDirection = new Vector3();
-        this.camera.getWorldDirection(cameraDirection);
-        cameraDirection.y = 0;
-        cameraDirection.normalize();
-
-        this.dragPlane.setFromNormalAndCoplanarPoint(
+        this._drag.plane.setFromNormalAndCoplanarPoint(
             new Vector3(0, 1, 0), // Horizontal plane
             light.position
         );
@@ -152,10 +149,10 @@ export class LightingSystem {
         document.body.classList.add('dragging-light');
 
         // Safety timeout — auto-cancel drag after 10 seconds
-        this._dragTimeout = setTimeout(() => {
-            if (this.isDragging) {
+        this._drag.timeout = setTimeout(() => {
+            if (this._drag.isDragging) {
                 console.warn('Drag timeout — auto-cancelling');
-                this.onMouseUp();
+                this._onMouseUp();
             }
         }, DRAG_TIMEOUT_MS);
 
@@ -164,14 +161,14 @@ export class LightingSystem {
         }
     }
 
-    onMouseMove(e) {
-        this.updateMouse(e);
+    _onMouseMove(e) {
+        this._updateMouse(e);
 
-        if (this.isDragging && this.draggedLight) {
-            this.performDrag();
+        if (this._drag.isDragging && this._drag.draggedLight) {
+            this._performDrag();
         } else {
             // Hover state
-            const intersects = this.getHelpersUnderMouse();
+            const intersects = this._getHelpersUnderMouse();
             const canvas = this.renderer.domElement;
 
             if (intersects.length > 0) {
@@ -182,21 +179,21 @@ export class LightingSystem {
         }
     }
 
-    onTouchMove(e) {
-        if (this.isDragging && e.touches.length === 1) {
+    _onTouchMove(e) {
+        if (this._drag.isDragging && e.touches.length === 1) {
             e.preventDefault();
             const touch = e.touches[0];
-            this.updateMouse(touch);
-            this.performDrag();
+            this._updateMouse(touch);
+            this._performDrag();
         }
     }
 
-    performDrag() {
-        this.raycaster.setFromCamera(this.mouse, this.camera);
+    _performDrag() {
+        this._drag.raycaster.setFromCamera(this._drag.mouse, this.camera);
 
-        if (this.raycaster.ray.intersectPlane(this.dragPlane, this.intersectionPoint)) {
-            const ix = this.intersectionPoint.x;
-            const iz = this.intersectionPoint.z;
+        if (this._drag.raycaster.ray.intersectPlane(this._drag.plane, this._drag.intersection)) {
+            const ix = this._drag.intersection.x;
+            const iz = this._drag.intersection.z;
 
             // Guard against NaN / Infinity from bad intersections
             if (!isFinite(ix) || !isFinite(iz)) return;
@@ -208,44 +205,44 @@ export class LightingSystem {
             const newX = MathUtils.clamp(ix, -DRAG_CLAMP_XZ, DRAG_CLAMP_XZ);
             const newZ = MathUtils.clamp(iz, -DRAG_CLAMP_XZ, DRAG_CLAMP_XZ);
 
-            this.draggedLight.position.x = newX;
-            this.draggedLight.position.z = newZ;
+            this._drag.draggedLight.position.x = newX;
+            this._drag.draggedLight.position.z = newZ;
 
             this.updateHelpers();
 
             if (this.onLightDrag) {
-                this.onLightDrag(this.draggedLight.name, {
+                this.onLightDrag(this._drag.draggedLight.name, {
                     x: newX,
-                    y: this.draggedLight.position.y,
+                    y: this._drag.draggedLight.position.y,
                     z: newZ
                 });
             }
         }
     }
 
-    onMouseUp() {
-        if (this.isDragging) {
+    _onMouseUp() {
+        if (this._drag.isDragging) {
             // Clear safety timeout
-            if (this._dragTimeout) {
-                clearTimeout(this._dragTimeout);
-                this._dragTimeout = null;
+            if (this._drag.timeout) {
+                clearTimeout(this._drag.timeout);
+                this._drag.timeout = null;
             }
 
             document.body.classList.remove('dragging-light');
 
-            if (this.onLightDragEnd && this.draggedLight) {
-                this.onLightDragEnd(this.draggedLight.name);
+            if (this.onLightDragEnd && this._drag.draggedLight) {
+                this.onLightDragEnd(this._drag.draggedLight.name);
             }
 
-            this.isDragging = false;
-            this.draggedLight = null;
-            this._dragOriginalPosition = null;
+            this._drag.isDragging = false;
+            this._drag.draggedLight = null;
+            this._drag.originalPosition = null;
         }
     }
 
     // Check if we're dragging (to disable orbit controls)
     isDraggingLight() {
-        return this.isDragging;
+        return this._drag.isDragging;
     }
 
     // Reset a light to its original preset position
@@ -274,8 +271,8 @@ export class LightingSystem {
         const config = {
             id: `${name}-copy-${this._freeLightCounter}`,
             name: makeBilingualLabel(
-                `${valueForLang(sourceName, 'es')} Copia`,
-                `${valueForLang(sourceName, 'en')} Copy`
+                `${localizeValue(sourceName, 'es')} Copia`,
+                `${localizeValue(sourceName, 'en')} Copy`
             ),
             type: light.userData.type || 'fill',
             position: { x: pos.x + 0.5, y: pos.y, z: pos.z + 0.5 },
@@ -286,8 +283,8 @@ export class LightingSystem {
             height: sourceConfig.height ?? (light.isRectAreaLight ? light.height : undefined),
             enabled: light.visible,
             role: makeBilingualLabel(
-                `Copia de ${valueForLang(sourceName, 'es')}`,
-                `Copy of ${valueForLang(sourceName, 'en')}`
+                `Copia de ${localizeValue(sourceName, 'es')}`,
+                `Copy of ${localizeValue(sourceName, 'en')}`
             ),
             freeLight: true,
             freeLightType: light.userData.freeLightType || light.userData.type || 'point'
@@ -342,7 +339,7 @@ export class LightingSystem {
     }
 
     // Recursively dispose geometries and materials to avoid memory leaks
-    disposeNode(node) {
+    _disposeNode(node) {
         if (!node) return;
         const isSharedGeometry = Object.values(sharedGeometries).includes(node.geometry);
         if (node.geometry && !isSharedGeometry) {
@@ -360,7 +357,7 @@ export class LightingSystem {
             node.dispose();
         }
         if (node.children) {
-            node.children.forEach(child => this.disposeNode(child));
+            node.children.forEach(child => this._disposeNode(child));
         }
     }
 
@@ -382,8 +379,8 @@ export class LightingSystem {
         if (helperData) {
             this.scene.remove(helperData.group);
             this.scene.remove(helperData.line);
-            this.disposeNode(helperData.group);
-            this.disposeNode(helperData.line);
+            this._disposeNode(helperData.group);
+            this._disposeNode(helperData.line);
             this.helpers = this.helpers.filter(h =>
                 h !== helperData.group && h !== helperData.line
             );
@@ -404,7 +401,7 @@ export class LightingSystem {
         });
         this.helpers.forEach(helper => {
             this.scene.remove(helper);
-            this.disposeNode(helper);
+            this._disposeNode(helper);
         });
         this.lights = [];
         this.helpers = [];
@@ -415,7 +412,7 @@ export class LightingSystem {
 
     createLight(config) {
         const { type, name, position, intensity, color, enabled } = config;
-        const key = config.id || (typeof name === 'string' ? name : valueForLang(name, 'es'));
+        const key = config.id || (typeof name === 'string' ? name : localizeValue(name, 'es'));
 
         let light;
 
@@ -481,13 +478,13 @@ export class LightingSystem {
         this.lights.push(light);
         this.lightObjects.set(key, light);
 
-        this.createLightHelper(light, type, color);
+        this._createLightHelper(light, type, color);
         if (this.onChange) this.onChange();
 
         return light;
     }
 
-    createLightHelper(light, type, color) {
+    _createLightHelper(light, type, color) {
         const helperGroup = new Group();
 
         // Main sphere (draggable)
