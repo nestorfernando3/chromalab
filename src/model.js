@@ -1,9 +1,11 @@
-import { Group, MeshStandardMaterial, Mesh, CylinderGeometry, SphereGeometry, Color, BackSide, CircleGeometry, AmbientLight, FogExp2, Vector2 } from 'three';
+import { Group, MeshStandardMaterial, Mesh, CylinderGeometry, SphereGeometry, Color, BackSide, CircleGeometry, AmbientLight, FogExp2, Vector2, BoxGeometry, PlaneGeometry } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { appEvents } from './utils/events.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
 
 // ====== Model registry — add more GLB models here ======
+export const DEFAULT_MODEL_ID = 'virtual_room';
+
 export const MODEL_REGISTRY = [
     {
         id: 'head',
@@ -61,6 +63,18 @@ export const MODEL_REGISTRY = [
         hideBase: false,
         preserveMaterial: true,
         description: { es: 'Pato de goma — iluminación de producto / Poly Haven CC0', en: 'Rubber duck - product lighting / Poly Haven CC0' }
+    },
+    {
+        id: 'virtual_room',
+        name: { es: 'Sala Ideal', en: 'Ideal Color Room' },
+        icon: '🏠',
+        kind: 'proceduralRoom',
+        hideBase: true,
+        preserveMaterial: true,
+        description: {
+            es: 'Una sala virtual neutra para iluminar, comparar reflejos y probar teoría del color',
+            en: 'A neutral virtual room for lighting, comparing reflections, and testing color theory'
+        }
     }
 ];
 
@@ -86,6 +100,149 @@ export function getModelRegistry(lang = null) {
     return lang ? MODEL_REGISTRY.map(model => localizeModelEntry(model, lang)) : MODEL_REGISTRY;
 }
 
+function disposeObject3D(object) {
+    object.traverse(child => {
+        child.geometry?.dispose();
+        if (child.material) {
+            (Array.isArray(child.material) ? child.material : [child.material])
+                .forEach(material => material.dispose());
+        }
+    });
+}
+
+function createRoomMaterial(color, options = {}) {
+    return new MeshStandardMaterial({
+        color,
+        roughness: options.roughness ?? 0.72,
+        metalness: options.metalness ?? 0.02
+    });
+}
+
+function createBox({ name, size, position, color, roughness, metalness }) {
+    const mesh = new Mesh(
+        new BoxGeometry(size[0], size[1], size[2]),
+        createRoomMaterial(color, { roughness, metalness })
+    );
+    mesh.name = name;
+    mesh.position.set(position[0], position[1], position[2]);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    return mesh;
+}
+
+function createPlane({ name, size, position, rotation, color, roughness }) {
+    const mesh = new Mesh(
+        new PlaneGeometry(size[0], size[1]),
+        createRoomMaterial(color, { roughness })
+    );
+    mesh.name = name;
+    mesh.position.set(position[0], position[1], position[2]);
+    mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
+    mesh.receiveShadow = true;
+    return mesh;
+}
+
+function createVirtualColorRoom() {
+    const room = new Group();
+    room.name = 'virtual-color-room';
+
+    room.add(createPlane({
+        name: 'matte-floor',
+        size: [5.4, 5.4],
+        position: [0, 0.02, -0.45],
+        rotation: [-Math.PI / 2, 0, 0],
+        color: 0x8a8580,
+        roughness: 0.92
+    }));
+    room.add(createPlane({
+        name: 'warm-neutral-wall',
+        size: [5.4, 2.9],
+        position: [0, 1.45, -3.15],
+        rotation: [0, 0, 0],
+        color: 0xb8b0a4,
+        roughness: 0.88
+    }));
+    room.add(createPlane({
+        name: 'cool-neutral-wall',
+        size: [5.4, 2.9],
+        position: [-2.7, 1.45, -0.45],
+        rotation: [0, Math.PI / 2, 0],
+        color: 0x9faab0,
+        roughness: 0.86
+    }));
+    room.add(createPlane({
+        name: 'deep-accent-wall',
+        size: [5.4, 2.9],
+        position: [2.7, 1.45, -0.45],
+        rotation: [0, -Math.PI / 2, 0],
+        color: 0x3f4f46,
+        roughness: 0.84
+    }));
+
+    room.add(createBox({
+        name: 'neutral-sofa',
+        size: [2.2, 0.48, 0.78],
+        position: [-0.85, 0.48, -1.65],
+        color: 0x6f7474,
+        roughness: 0.78
+    }));
+    room.add(createBox({
+        name: 'sofa-back',
+        size: [2.28, 0.72, 0.18],
+        position: [-0.85, 0.86, -2.02],
+        color: 0x5f6666,
+        roughness: 0.8
+    }));
+    room.add(createBox({
+        name: 'low-table',
+        size: [1.5, 0.16, 0.74],
+        position: [0.55, 0.35, -0.56],
+        color: 0x4b4038,
+        roughness: 0.58
+    }));
+    room.add(createBox({
+        name: 'table-base',
+        size: [1.1, 0.32, 0.42],
+        position: [0.55, 0.17, -0.56],
+        color: 0x2d2a29,
+        roughness: 0.7
+    }));
+
+    const sampleColors = [0xc41e3a, 0xf2b705, 0x2f9e44, 0x2f80ed, 0x8e44ad, 0xd8d2c4];
+    sampleColors.forEach((color, index) => {
+        const swatch = createBox({
+            name: `color-swatch-${index + 1}`,
+            size: [0.34, 0.34, 0.035],
+            position: [-1.4 + index * 0.55, 1.72, -3.12],
+            color,
+            roughness: 0.62
+        });
+        room.add(swatch);
+    });
+
+    const sphere = new Mesh(
+        new SphereGeometry(0.28, 32, 16),
+        createRoomMaterial(0xded7ca, { roughness: 0.34, metalness: 0.08 })
+    );
+    sphere.name = 'neutral-reference-sphere';
+    sphere.position.set(0.15, 0.73, -0.55);
+    sphere.castShadow = true;
+    sphere.receiveShadow = true;
+    room.add(sphere);
+
+    room.add(createBox({
+        name: 'color-reference-cube',
+        size: [0.42, 0.42, 0.42],
+        position: [0.9, 0.68, -0.6],
+        color: 0x737373,
+        roughness: 0.46
+    }));
+
+    room.position.set(0, 0, 0.55);
+    room.rotation.y = Math.PI / 18;
+    return room;
+}
+
 
 class ModelManager {
     constructor(scene) {
@@ -100,7 +257,7 @@ class ModelManager {
 
         this.scene.add(this.modelGroup);
         this.createBase();
-        this.loadModel('head');
+        this.loadModel(DEFAULT_MODEL_ID);
     }
 
     createBase() {
@@ -149,14 +306,18 @@ class ModelManager {
 
         if (this.currentHead) {
             this.modelGroup.remove(this.currentHead);
-            this.currentHead.traverse(child => {
-                child.geometry?.dispose();
-                if (child.material) {
-                    (Array.isArray(child.material) ? child.material : [child.material])
-                        .forEach(m => m.dispose());
-                }
-            });
+            disposeObject3D(this.currentHead);
             this.currentHead = null;
+        }
+
+        if (config.kind === 'proceduralRoom') {
+            const room = createVirtualColorRoom();
+            this.modelGroup.add(room);
+            this.currentHead = room;
+            this.isLoading = false;
+            if (loading) loading.classList.add('hidden');
+            appEvents.emit('requestRender');
+            return;
         }
 
         // Placeholder wireframe while loading

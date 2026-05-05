@@ -8,7 +8,7 @@
  *  - ScreenshotExporter → PNG download
  */
 import { getPresetNames, getPreset, localizePreset } from './presets.js';
-import { switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
+import { DEFAULT_MODEL_ID, switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
 import { setupOnboarding } from './onboarding.js';
 import { renderDiagram } from './diagram.js';
 import { clearChildren } from './utils/dom.js';
@@ -42,7 +42,7 @@ export class UI {
         this.lang = normalizeLanguage(options.language || DEFAULT_LANGUAGE);
         this.currentPreset = null;
         this.currentPresetIndex = 0;
-        this.activeModelId = getModelRegistry().at(0)?.id || 'head';
+        this.activeModelId = DEFAULT_MODEL_ID;
         this.activeBackgroundColor = getBackgroundPresets().at(0)?.color || '#080810';
         this.controlsCollapsed = this._readControlsCollapsed();
         this.completedLessonIds = new Set(this._readCompletedLessons());
