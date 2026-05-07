@@ -20,7 +20,7 @@ const DRAG_CLAMP_Y_MAX = 5.0;
 const DRAG_MAX_DISTANCE = 5; // Max distance from center before ignoring drag
 const DRAG_TIMEOUT_MS = 10000; // Auto-cancel drag after 10 seconds
 
-function _makeBilingualLabel(esText, enText) {
+function makeBilingualLabel(esText, enText) {
     return { es: esText, en: enText };
 }
 

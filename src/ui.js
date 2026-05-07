@@ -590,7 +590,11 @@ export class UI {
 
         const preset = this.session.currentPreset;
         if (!preset) {
+            if (strip.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
             strip.classList.remove('visible');
+            strip.setAttribute('aria-hidden', 'true');
             return;
         }
 
@@ -599,11 +603,16 @@ export class UI {
             : (preset.lights || []).map(l => l.color).filter(Boolean);
 
         if (colors.length === 0) {
+            if (strip.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
             strip.classList.remove('visible');
+            strip.setAttribute('aria-hidden', 'true');
             return;
         }
 
         strip.classList.add('visible');
+        strip.setAttribute('aria-hidden', 'false');
 
         // Only re-render if colors changed
         const key = colors.join(',');
