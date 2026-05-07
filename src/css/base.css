@@ -1,0 +1,138 @@
+:root {
+  /* UPCA Brand Colors */
+  --upca-red: #C41E3A;
+  --upca-red-light: #E63950;
+  --upca-red-dark: #9B1730;
+  --upca-gold: #D4AF37;
+  --upca-gold-light: #E5C158;
+
+  /* Color System */
+  --color-bg: #050508;
+  --color-bg-secondary: #0c0c10;
+  --color-bg-tertiary: #161620;
+  --color-bg-elevated: rgba(22, 22, 32, 0.95);
+
+  /* Glass Effects */
+  --glass-bg: rgba(16, 16, 24, 0.94);
+  --glass-bg-light: rgba(28, 28, 40, 0.85);
+  --glass-border: rgba(196, 30, 58, 0.2);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.78);
+  --text-tertiary: rgba(255, 255, 255, 0.52);
+  --text-quaternary: rgba(255, 255, 255, 0.28);
+
+  /* Accents */
+  --accent-primary: var(--upca-red);
+  --accent-primary-light: var(--upca-red-light);
+  --accent-secondary: var(--upca-gold);
+  --accent-green: #34d058;
+  --accent-blue: #58a6ff;
+  --accent-teal: #56d4dd;
+
+  /* Light Colors */
+  --light-key: #ffc844;
+  --light-fill: #56d4dd;
+  --light-rim: #ff6b9d;
+  --light-back: #a855f7;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Typography */
+  --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+
+  /* Radius */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-red: 0 0 20px rgba(196, 30, 58, 0.3);
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --transition-fast: 150ms var(--ease-out);
+  --transition-normal: 280ms var(--ease-out);
+  --transition-slow: 450ms var(--ease-out);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: var(--font-system);
+  background: var(--color-bg);
+  color: var(--text-primary);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--upca-red);
+  color: white;
+}
+
+#scene-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+#app>* {
+  pointer-events: auto;
+}
+
+/* ========== Scrollbar Styling ========== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border-hover);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-quaternary);
+}
+

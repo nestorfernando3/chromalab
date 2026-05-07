@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.0] - 2026-05-07
+
+### Changed
+
+- Ported ChromaLab to the Lighting Studio 3D visual system with split CSS modules under `src/css/`.
+- Replaced the monolithic `style.css` with modular imports plus a ChromaLab compatibility layer.
+- Restyled lesson, controls, palette, checklist, evidence, modal, toast and footer surfaces to match the reference app more closely while preserving ChromaLab functionality.
+- Added mobile scrim state handling for drawer-style lesson and controls panels.
+
+### Removed
+
+- Removed duplicate numbered source/docs files and stale untracked planning/prototype artifacts from the repo.
+- Removed tracked duplicate `CHANGELOG 2.md`; `CHANGELOG.md` is now the single changelog source.
+
+### Verified
+
+- `npm run build`
+- `npm test -- --run`
+
 ## [0.3.0] - 2026-05-07
 
 ### Added

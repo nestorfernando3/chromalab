@@ -1,0 +1,33 @@
+/* ========== Footer / Copyright ========== */
+.copyright-footer {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-5);
+  font-size: 10px;
+  color: var(--text-quaternary);
+  text-align: right;
+  line-height: 1.5;
+  max-width: 260px;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+}
+
+.copyright-footer:hover {
+  opacity: 1;
+}
+
+.copyright-footer strong {
+  color: var(--text-tertiary);
+}
+
+.copyright-footer a {
+  color: var(--upca-red-light);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.copyright-footer a:hover {
+  color: var(--upca-red);
+  text-decoration: underline;
+}
+

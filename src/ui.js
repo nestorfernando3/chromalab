@@ -940,6 +940,11 @@ export class UI {
 
         panel.classList.toggle('open', Boolean(open));
         toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+        const anyOpen = ['teach', 'controls'].some((name) =>
+            document.getElementById(`${name}-panel`)?.classList.contains('open')
+        );
+        document.getElementById('app-scrim')?.classList.toggle('visible', this._isMobileLayout() && anyOpen);
     }
 
     _syncMobilePanelButtons() {

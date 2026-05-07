@@ -38,7 +38,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 renderer.toneMapping = ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.5;
+renderer.toneMappingExposure = 2.0;
 renderer.outputColorSpace = SRGBColorSpace;
 
 // Orbit controls

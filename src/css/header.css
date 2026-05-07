@@ -1,0 +1,113 @@
+/* ========== Header ========== */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(5, 5, 8, 0.85) 0%, rgba(5, 5, 8, 0.4) 70%, transparent 100%);
+  backdrop-filter: blur(8px);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.app-icon {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(145deg, var(--upca-red), var(--upca-red-dark));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: var(--shadow-glow-red), var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.app-icon:hover {
+  transform: scale(1.05);
+}
+
+.header-title h1 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.4px;
+}
+
+.header-subtitle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.3px;
+  margin-top: 1px;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+}
+
+.upca-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-3);
+  background: linear-gradient(135deg, rgba(196, 30, 58, 0.15), rgba(196, 30, 58, 0.08));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  color: var(--upca-red-light);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+}
+
+.upca-badge:hover {
+  background: linear-gradient(135deg, rgba(196, 30, 58, 0.25), rgba(196, 30, 58, 0.12));
+  border-color: var(--upca-red);
+}
+
+.upca-badge::before {
+  content: '🎓';
+  font-size: 13px;
+}
+
+.header-right {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border-subtle);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--glass-border-hover);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.icon-button:active {
+  transform: translateY(0);
+}
+
