@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.3.0] - 2026-05-07
+
+### Added
+
+- **`CurriculumDrawer`** (`src/ui/CurriculumDrawer.js`): panel lateral deslizable con mapa de lecciones — estados completado/actual/bloqueado, conteo de progreso, navegación directa.
+- **`LessonCompletionModal`** (`src/ui/LessonCompletionModal.js`): modal de celebración al completar lección — burst visual, evidencia completada, botones "Siguiente lección" y "Revisar evidencia".
+- **`ComparisonMode`** (`src/ui/ComparisonMode.js`): tarjeta de comparación para presets de contraste y temperatura — toggle de pantalla dividida con línea divisoria visual.
+- **`ScreenshotToast`** (`src/ui/ScreenshotToast.js`): toast con thumbnail de captura, nombre de archivo y auto-dismiss en 2.6 s.
+- **Active step hints**: pista contextual en el paso activo de la misión — animación de pulso en el control objetivo + texto guía en la esquina inferior.
+- **Collapsed lesson rail**: barra de acceso rápido que aparece cuando el panel de controles está colapsado — muestra número de lección, progreso y acceso a evidencia.
+- **Global Escape handler**: cierra drawer, modal de completado y modo dividido con tecla Escape.
+- **Modo acentuado por contexto**: tokens de color diferenciados según modo (guiado = cálido, exploración = cian, sandbox = púrpura/espectro).
+
+### Changed
+
+- **`style.css`**: sistema de tokens híbrido, refinamiento de paneles glassmorphism, scrollbar personalizado, animaciones de pulso y toast.
+- **`src/ui.js`**: integra `CurriculumDrawer`, `LessonCompletionModal`, `ComparisonMode`, `ScreenshotToast`, active hints y lesson rail en el ciclo de renderizado.
+- **`src/localization.js`**: agregadas claves `curriculum`, `missionHints`, `screenshotToast`, `completionModal` con textos ES/EN.
+- **`src/presets.js`**: presets `contrast` y `temperature` ahora incluyen campo `comparison` con título y descripción.
+- **`src/lessonSession.js`**: expone getter `presets` para acceso al catálogo de lecciones.
+- **`src/ui/ScreenshotExporter.js`**: evento `screenshotTaken` ahora incluye `dataUrl` y `lessonId`.
+- **Tipografía**: `--text-xs` mínimo subido de 10 px a 11 px; todos los `font-size: 10px` estáticos reemplazados por `var(--text-xs)`; pesos añadidos a títulos y textos de sección.
+- **Ancho del panel**: `--panel-w-wide` aumentado de 320 px a 340 px para evitar truncamiento de "Anterior"/"Siguiente".
+- **Separadores de sección**: `.section-label` ahora incluye `border-top` y `padding-top` para división visual más clara.
+
+### Fixed
+
+- **Checklist visual crudo**: items ahora renderizan con checkbox circular, fondo de fila, badge de "Obligatorio" como píldora separada, barra de progreso y estados active/completed.
+- **Concatenación de texto**: espacio añadido entre nombre de tarea y badge `required` en `LessonChecklist.js`.
+- **Nav buttons truncados**: padding reducido, gap reducido, añadido `white-space: nowrap` + `text-overflow: ellipsis`.
+- **Título de completado excesivo**: reducido de `clamp(1.8rem, 4vw, 3rem)` a `var(--text-xl)` (20–24 px).
+- **Responsive y accesibilidad**: fallbacks móviles para comparison-layer y screenshot-toast, override `prefers-reduced-motion` en todas las animaciones nuevas.
+
 ## [0.2.0] - 2026-05-03
 
 ### Added
