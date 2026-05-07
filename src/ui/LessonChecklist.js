@@ -62,6 +62,7 @@ export class LessonChecklist {
 
             const li = document.createElement('li');
             li.className = 'checklist-item';
+            if (isActive) li.classList.add('active');
             if (isCompleted) {
                 li.classList.add('completed');
                 if (hasCompletedItems) {
@@ -79,6 +80,7 @@ export class LessonChecklist {
             text.textContent = this._getItemLabel(item.id, lang);
 
             if (isRequired) {
+                text.appendChild(document.createTextNode(' '));
                 const requiredBadge = document.createElement('span');
                 requiredBadge.className = 'checklist-required';
                 requiredBadge.textContent = copy.required;

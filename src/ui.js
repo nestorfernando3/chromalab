@@ -17,9 +17,13 @@ import { LightControls } from './ui/LightControls.js';
 import { appEvents } from './utils/events.js';
 import { SandboxManager } from './ui/SandboxManager.js';
 import { ScreenshotExporter } from './ui/ScreenshotExporter.js';
+import { ScreenshotToast } from './ui/ScreenshotToast.js';
+import { LessonCompletionModal } from './ui/LessonCompletionModal.js';
+import { ComparisonMode } from './ui/ComparisonMode.js';
 import { applyStaticTranslations, getAppCopy } from './localization.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage, storeLanguage } from './runtime.js';
 import { LessonMission } from './ui/LessonMission.js';
+import CurriculumDrawer from './ui/CurriculumDrawer.js';
 import { LessonChecklist } from './ui/LessonChecklist.js';
 import { StudentResponse } from './ui/StudentResponse.js';
 import { PaletteControls } from './ui/PaletteControls.js';
@@ -47,6 +51,10 @@ export class UI {
         this.session.onChange((type, data) => {
             if (type === 'lessonCompleted') {
                 this._showToast('status.lessonCompleted');
+                this.completionModal.show({
+                    preset: this.session.currentPreset,
+                    completedLabels: (this.session.currentPreset?.checklist || []).map(item => item.id)
+                });
             } else if (type === 'lessonLoaded' && data?.preset) {
                 this._onSessionLessonLoaded(data.preset);
             }
@@ -96,6 +104,9 @@ export class UI {
         this.screenshotExporter = new ScreenshotExporter(
             () => this.session.currentPreset?.id
         );
+        this.screenshotToast = new ScreenshotToast(() => getAppCopy(this.lang).screenshotToast);
+        this.completionModal = new LessonCompletionModal(() => this.lang, () => getAppCopy(this.lang).completionModal);
+        this.comparisonMode = new ComparisonMode(() => this.lang);
 
         this.progressEngine = new LessonProgressEngine();
         this.evidenceStore = new EvidenceStore();
@@ -106,6 +117,12 @@ export class UI {
         this.lessonMission = new LessonMission(
             () => this.lang,
             (lessonId) => this.progressEngine.getCompletedCriteria(lessonId)
+        );
+
+        this.curriculumDrawer = new CurriculumDrawer(
+            () => this.lang,
+            () => getAppCopy(this.lang).curriculum,
+            (index) => { this.loadLesson(index); this.curriculumDrawer.close(); }
         );
 
         // ── Init ─────────────────────────────────────────────────────────────
@@ -305,6 +322,10 @@ export class UI {
 
         // Update palette strip
         this._updatePaletteStrip();
+
+        // Render comparison mode card
+        this.comparisonMode.render(localizedPreset);
+        this._renderLessonRail();
     }
 
     _collapseEmbedControls() {
@@ -315,7 +336,25 @@ export class UI {
         const svg = document.getElementById('lighting-diagram');
         const preset = this.session.currentPreset;
         if (!svg || !preset) return;
-        renderDiagram(this._getLocalizedCurrentPreset(), svg, this.lang);
+        const localizedPreset = this._getLocalizedCurrentPreset();
+        renderDiagram(localizedPreset, svg, this.lang, {
+            onHueChange: (hue) => {
+                if (this.colorSystem) {
+                    this.colorSystem.setHue(hue);
+                    this._updateDiagramIndicator(hue, this.colorSystem.saturation, this.colorSystem.value);
+                }
+            },
+            onDragEnd: () => {
+                this._updateDiagram();
+            }
+        });
+    }
+
+    _updateDiagramIndicator(hue, saturation, value) {
+        const svg = document.getElementById('lighting-diagram');
+        if (svg && svg._controls) {
+            svg._controls.updateIndicator(hue, saturation, value);
+        }
     }
 
     _updateLightsOverview() {
@@ -485,24 +524,22 @@ export class UI {
             return;
         }
 
-        // Map step IDs to control group IDs
-        const stepControlMap = {
-            'adjust-hue': 'cg-palette',
-            'adjust-saturation': 'cg-palette',
-            'adjust-value': 'cg-palette',
-            'apply-color': 'cg-palette',
-            'assign-palette': 'cg-palette',
-            'write-observation': null,
-            'identify-complement': 'cg-palette',
-            'adjust-intensity': 'cg-lights',
-            'add-light': 'cg-lights',
-            'take-screenshot': null,
-            'compare-versions': 'cg-palette',
-            'justify-choice': null
-        };
-
-        const controlId = stepControlMap[payload.activeStepId] || null;
+        const target = this.lessonMission?.getStepTarget?.();
+        const controlId = target?.group || target?.controlId || null;
         this._highlightControl(controlId);
+        this._showActiveStepHint(payload.activeStepId, target);
+    }
+
+    _showActiveStepHint(stepId, target) {
+        const copy = getAppCopy(this.lang).missionHints || {};
+        const message = copy[stepId];
+        if (!message) return;
+        this._showSceneFeedback(message);
+        if (target?.controlId) {
+            const el = document.getElementById(target.controlId);
+            el?.classList.add('control-target-pulse');
+            setTimeout(() => el?.classList.remove('control-target-pulse'), 2200);
+        }
     }
 
     // ── Scene Feedback ────────────────────────────────────────────────────────
@@ -660,11 +697,23 @@ export class UI {
             this.screenshotExporter.takeScreenshot();
         });
 
+        document.getElementById('btn-curriculum')?.addEventListener('click', () => {
+            this.curriculumDrawer.render({
+                lessons: this.session.presets,
+                currentId: this.session.currentPreset?.id,
+                completedIds: this._getCompletedLessonIndexes()
+            });
+            this.curriculumDrawer.toggle();
+        });
+
         document.getElementById('btn-help')?.addEventListener('click', () => {
             document.getElementById('onboarding')?.classList.remove('hidden');
         });
 
-        appEvents.on('screenshotTaken', () => this._showToast('status.screenshotSaved'));
+        appEvents.on('screenshotTaken', (payload) => {
+            this.screenshotToast.show(payload);
+            this._showToast('status.screenshotSaved');
+        });
         appEvents.on('screenshotFailed', () => this._showToast('status.screenshotFailed'));
         appEvents.on('tipRestored', () => this._showToast('status.tipRestored'));
 
@@ -690,6 +739,11 @@ export class UI {
 
         appEvents.on('palette:previewChanged', () => {
             this._updatePaletteStrip();
+            this._updateDiagram();
+        });
+
+        appEvents.on('color:harmonyChanged', () => {
+            this._updateDiagram();
         });
 
         // Scene feedback on background changed
@@ -715,6 +769,14 @@ export class UI {
         document.getElementById('app-scrim')?.addEventListener('click', () => {
             this._setMobilePanel('teach', false);
             this._setMobilePanel('controls', false);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            this.curriculumDrawer?.close();
+            this.completionModal?.close();
+            const compLayer = document.getElementById('comparison-layer');
+            compLayer?.classList.remove('split-active');
         });
     }
 
@@ -841,6 +903,21 @@ export class UI {
         panel?.classList.toggle('collapsed', this.controlsCollapsed);
         toggle?.setAttribute('aria-expanded', this.controlsCollapsed ? 'false' : 'true');
         if (persist) this._saveControlsCollapsed(this.controlsCollapsed);
+        document.getElementById('lesson-rail')?.classList.toggle('visible', this.controlsCollapsed);
+    }
+
+    _renderLessonRail() {
+        const rail = document.getElementById('lesson-rail');
+        if (!rail || !this.session.currentPreset) return;
+        const progress = this.progressEngine.getCompletedCriteria(this.session.currentPreset.id).length;
+        rail.innerHTML = `
+      <button type="button" class="lesson-rail-btn" data-target="mission" aria-label="Open lesson">${this.session.currentIndex + 1}</button>
+      <button type="button" class="lesson-rail-btn" data-target="steps" aria-label="View steps">${progress}</button>
+      <button type="button" class="lesson-rail-btn" data-target="evidence" aria-label="View evidence">E</button>
+    `;
+        rail.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => this._setMobilePanel('teach', true));
+        });
     }
 
     _getCompletedLessonIndexes() {

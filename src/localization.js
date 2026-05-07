@@ -29,7 +29,9 @@ const COPY = {
             screenshotTitle: 'Captura de pantalla',
             screenshotAria: 'Tomar captura de pantalla',
             lessonsToggle: 'Lecciones',
-            controlsToggle: 'Controles'
+            controlsToggle: 'Controles',
+            curriculumToggle: 'Currículo',
+            curriculumToggleTitle: 'Ver currículo de lecciones'
         },
         sections: {
             goal: 'Tu Objetivo',
@@ -171,7 +173,34 @@ const COPY = {
             applyToBackground: 'Aplicar a fondo',
             valueNote: 'Valor cambia el color. Exposición cambia toda la escena.'
         },
-        goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.'
+        goLabDescription: 'Laboratorio interactivo para aprender teoría del color mediante exploración cromática y simulación 3D.',
+        curriculum: {
+            title: 'Currículo',
+            close: 'Cerrar currículo'
+        },
+        missionHints: {
+            'adjust-hue': 'Cambia el matiz y observa la familia del color.',
+            'adjust-saturation': 'Ajusta la saturación para comparar color vivo contra apagado.',
+            'adjust-value': 'Mueve valor y mira cómo cambia la claridad de la escena.',
+            'apply-color': 'Aplica la paleta para verla en la escena 3D.',
+            'write-observation': 'Describe qué cambio viste y por qué importa.',
+            'adjust-intensity': 'Ajusta la intensidad de la luz y observa el efecto.',
+            'add-light': 'Agrega una luz para modificar la escena.',
+            'take-screenshot': 'Toma una captura como evidencia de tu trabajo.',
+            'identify-complement': 'Selecciona el color complementario en la rueda.',
+            'assign-palette': 'Asigna la paleta a las luces de la escena.',
+            'compare-versions': 'Compara las versiones antes y después.',
+            'justify-choice': 'Justifica tu elección escribiendo una observación.'
+        },
+        screenshotToast: {
+            saved: 'Captura guardada'
+        },
+        completionModal: {
+            title: 'Lección completada',
+            defaultMessage: 'Completaste la misión de aprendizaje.',
+            next: 'Siguiente lección',
+            review: 'Revisar evidencia'
+        }
     },
     en: {
         page: {
@@ -186,7 +215,9 @@ const COPY = {
             screenshotTitle: 'Screenshot',
             screenshotAria: 'Take a screenshot',
             lessonsToggle: 'Lessons',
-            controlsToggle: 'Controls'
+            controlsToggle: 'Controls',
+            curriculumToggle: 'Curriculum',
+            curriculumToggleTitle: 'View lesson curriculum'
         },
         sections: {
             goal: 'Your Goal',
@@ -328,7 +359,34 @@ const COPY = {
             applyToBackground: 'Apply to background',
             valueNote: 'Value changes the color. Exposure changes the whole scene.'
         },
-        goLabDescription: 'Interactive lab for learning color theory through chromatic exploration and 3D simulation.'
+        goLabDescription: 'Interactive lab for learning color theory through chromatic exploration and 3D simulation.',
+        curriculum: {
+            title: 'Curriculum',
+            close: 'Close curriculum'
+        },
+        missionHints: {
+            'adjust-hue': 'Change the hue and observe the color family.',
+            'adjust-saturation': 'Adjust saturation to compare vivid vs muted color.',
+            'adjust-value': 'Move value and watch how scene brightness changes.',
+            'apply-color': 'Apply the palette to see it in the 3D scene.',
+            'write-observation': 'Describe what changed and why it matters.',
+            'adjust-intensity': 'Adjust the light intensity and observe the effect.',
+            'add-light': 'Add a light to modify the scene.',
+            'take-screenshot': 'Take a screenshot as evidence of your work.',
+            'identify-complement': 'Select the complementary color on the wheel.',
+            'assign-palette': 'Assign the palette to the scene lights.',
+            'compare-versions': 'Compare before and after versions.',
+            'justify-choice': 'Justify your choice by writing an observation.'
+        },
+        screenshotToast: {
+            saved: 'Screenshot saved'
+        },
+        completionModal: {
+            title: 'Lesson complete',
+            defaultMessage: 'You completed the learning mission.',
+            next: 'Next lesson',
+            review: 'Review evidence'
+        }
     }
 };
 

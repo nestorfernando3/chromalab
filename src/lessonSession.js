@@ -2,7 +2,7 @@
 // Owns current Lesson, Preset clone, and completion tracking.
 // Does NOT know about DOM, Three.js, or rendering.
 
-import { getPresetNames, getPreset } from './presets.js';
+import { getPresetNames, getPreset, getAllPresets } from './presets.js';
 
 const STORAGE_KEY = 'chromaLab.completedLessons';
 
@@ -69,6 +69,10 @@ export class LessonSession {
 
     get presetNames() {
         return [...this._presetNames];
+    }
+
+    get presets() {
+        return getAllPresets();
     }
 
     get totalCount() {

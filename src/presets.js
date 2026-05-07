@@ -196,6 +196,11 @@ const presets = {
         practice: { task: { es: 'Cambia el fondo entre claro y oscuro y observa cómo la percepción del rostro iluminado cambia drásticamente.', en: 'Toggle the backdrop between light and dark and observe how the perception of the lit face changes drastically.' }, expectedOutput: { es: 'Una observación escrita sobre cómo cambia la percepción del color según su entorno.', en: 'A written observation about how color perception changes according to its environment.' } },
         mission: { es: 'Observa cómo el mismo color se percibe diferente sobre fondos distintos', en: 'Observe how the same color looks different on different backgrounds' },
         completionMessage: { es: '¡Observaste el contraste simultáneo! Un mismo color cambia según su entorno.', en: 'You observed simultaneous contrast! The same color changes with its environment.' },
+        comparison: {
+            enabled: true,
+            title: { es: 'Referencia', en: 'Reference' },
+            description: { es: 'Compara tu escena con este objetivo visual.', en: 'Compare your scene against this visual target.' }
+        },
         lights: [
             { id: 'con-key', name: { es: 'Luz Neutra', en: 'Neutral Light' }, type: 'key', position: { x: 2.5, y: 3.2, z: 2.0 }, intensity: 3.0, color: '#ffffff', role: { es: 'Luz blanca neutra de referencia', en: 'Neutral white reference light' } },
             { id: 'con-fill', name: { es: 'Luz de Relleno', en: 'Fill Light' }, type: 'fill', position: { x: -2.0, y: 2.2, z: 2.5 }, intensity: 0.3, color: '#8888ff', role: { es: 'Luz fría para contraste', en: 'Cool light for contrast' } },
@@ -273,6 +278,11 @@ const presets = {
         practice: { task: { es: 'Cambia el color de las luces entre cálido y frío. Toma capturas de ambas versiones y compara qué emoción transmite cada una.', en: 'Toggle the light colors between warm and cool. Take screenshots of both versions and compare what emotion each transmits.' }, expectedOutput: { es: 'Dos capturas con iluminaciones opuestas explicando la emoción de cada una.', en: 'Two screenshots with opposite lighting explaining the emotion of each.' } },
         mission: { es: 'Compara la atmósfera que crean los colores cálidos vs fríos', en: 'Compare the atmosphere created by warm vs cool colors' },
         completionMessage: { es: '¡Excelente! La temperatura del color afecta la percepción espacial.', en: 'Excellent! Color temperature affects spatial perception.' },
+        comparison: {
+            enabled: true,
+            title: { es: 'Referencia', en: 'Reference' },
+            description: { es: 'Compara la versión cálida vs fría.', en: 'Compare the warm vs cool version.' }
+        },
         lights: [
             { id: 'temp-key', name: { es: 'Luz Cálida', en: 'Warm Light' }, type: 'key', position: { x: 2.5, y: 3.2, z: 2.0 }, intensity: 2.8, color: '#ffd4a0', role: { es: 'Luz cálida que avanza', en: 'Warm advancing light' } },
             { id: 'temp-fill', name: { es: 'Luz Fría', en: 'Cool Light' }, type: 'fill', position: { x: -2.0, y: 2.2, z: 2.5 }, intensity: 0.5, color: '#a0c8ff', role: { es: 'Luz fría que retrocede', en: 'Cool receding light' } },
