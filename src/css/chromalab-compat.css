@@ -21,6 +21,10 @@
   pointer-events: none;
 }
 
+#app > .app-main {
+  pointer-events: none;
+}
+
 .icon-svg {
   width: 1em;
   height: 1em;

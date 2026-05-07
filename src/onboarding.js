@@ -55,6 +55,8 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
         overlay?.classList.remove('hidden');
     }
 
+    startBtn?.addEventListener('click', start);
+
     if (skipAutoStart) {
         overlay?.classList.add('hidden');
         if (onStartCallback) onStartCallback();
@@ -63,7 +65,6 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
         if (onStartCallback) onStartCallback();
     } else {
         // First visit — wait for explicit user action, no auto-close
-        startBtn?.addEventListener('click', start);
         // Allow skip via Escape key handled in UI.js
     }
 

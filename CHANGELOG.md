@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.1] - 2026-05-07
+
+### Fixed
+
+- Fixed free-light creation by restoring the `makeBilingualLabel` helper used by sandbox light actions.
+- Fixed scene interaction by letting pointer events pass through the app shell to the WebGL canvas, restoring drag-to-rotate behavior.
+- Fixed reopened onboarding/help overlay so the `Comenzar` button always closes it and returns control to the app.
+- Auto-select the first lesson light when a lesson loads so light controls are immediately available.
+- Synced palette strip `aria-hidden` state with visibility to avoid focus being trapped in hidden controls.
+- Added the modern `mobile-web-app-capable` meta tag and an inline favicon to remove browser console noise.
+
+### Verified
+
+- `vitest run`
+- `vite build`
+- Browser probe confirmed canvas drag rotates the camera and intensity controls update the active Three.js light.
+
 ## [0.4.0] - 2026-05-07
 
 ### Changed

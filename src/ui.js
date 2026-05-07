@@ -266,6 +266,7 @@ export class UI {
         const selectedLight = selectedLightId
             ? localizedPreset.lights.find(light => light.id === selectedLightId)
             : null;
+        const defaultSelectedLight = selectedLight || localizedPreset.lights[0] || null;
 
         const currentIndex = this.session.currentIndex;
         this.navigator.index = currentIndex;
@@ -299,8 +300,8 @@ export class UI {
         this._updateDiagram();
         this._updateLightsOverview();
 
-        if (selectedLight) {
-            this.lightControls.selectLight(selectedLight);
+        if (defaultSelectedLight) {
+            this.lightControls.selectLight(defaultSelectedLight);
         } else {
             this.lightControls.renderLightSelector(localizedPreset, null);
             this.lightControls.selectedLightId = null;
@@ -318,7 +319,7 @@ export class UI {
 
         // Apply mode visibility & update light context
         this._applyModeVisibility();
-        this._updateSelectedLightContext(selectedLight || null);
+        this._updateSelectedLightContext(defaultSelectedLight || null);
 
         // Update palette strip
         this._updatePaletteStrip();
