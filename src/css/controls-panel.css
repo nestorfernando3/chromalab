@@ -1,4 +1,20 @@
 /* ========== Controls Panel ========== */
+
+.guided-only {
+  display: none;
+}
+
+.explore-only {
+  display: none;
+}
+
+body:not(.explore-mode) .guided-only {
+  display: block;
+}
+
+body.explore-mode .explore-only {
+  display: block;
+}
 .controls-panel {
   position: fixed;
   top: 65px;

@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.5.0] - 2026-05-07
+
+### Added
+
+- **Responsive Hardening** (Phase 1): overflow-x containment on html/body/panels, sub-500px media query reducing header/collapsing icon buttons/capping teach-panel height, Escape key now closes all mobile panels.
+- **Skip link** (`index.html` + `src/css/chromalab-compat.css`): first focusable element for keyboard users, visually-hidden until focused.
+- **Focus traps** (`src/ui/CurriculumDrawer.js`, `src/ui/LessonCompletionModal.js`): Tab/Shift+Tab trapped within open modals/drawers, focus restored to trigger on close.
+- **Focusable modal content** (`src/ui/LessonCompletionModal.js`): completion modal now shows palette swatches, observation text preview, and completed steps.
+- **State machine for StudentResponse** (`src/ui/StudentResponse.js`): empty→dirty→saving→saved→completed states with distinct visual feedback (pulse animation for saving, timestamp for saved, checkmark for completed).
+- **Mobile bottom nav** (`index.html` + `src/css/responsive.css` + `src/ui.js`): fixed bottom bar with 4 surface buttons (Lab/Lección/Controles/Evidencia), safe-area-inset support, switching opens/closes corresponding mobile panels.
+- **Guided/Explore mode classes** (`src/css/controls-panel.css`): `.guided-only` / `.explore-only` visibility classes for hiding/showing controls by mode.
+- **`applyToPrefix` localization key** for dynamic apply button labels ("Aplicar a [light name]").
+- **`curriculumAria` / `accessibility.skipLink` localization keys** for screen reader support.
+- **`unsaved` localization key** for StudentResponse dirty state.
+
+### Changed
+
+- **`src/css/responsive.css`**: overflow-x hidden globally, `.controls-panel` overflow-x hidden on mobile, scene-feedback max-width cap, 500px breakpoint, mobile bottom nav styles.
+- **`src/css/utilities.css`**: merged `.visually-hidden` + `.visually-hidden:focusable` with existing cursor state classes.
+- **`src/localization.js`**: value label clarified to "Valor (HSV): claridad del color", exposure to "Exposición: brillo global de la escena", added EN equivalents, added completion modal sub-labels.
+- **`src/ui/PaletteControls.js`**: apply-to-light button now shows targeted light name, harmony select has proper `aria-labelledby` association.
+- **`src/ui.js`**: Escape handler now closes mobile panels, bottom nav setup, richer completion modal payload (palette colors + observation).
+- **`src/ui/StudentResponse.js`**: `_setState()` manages 5 visual states with CSS classes, listens for `lesson:completed` event.
+
+### Fixed
+
+- Mobile panel buttons now use `data-i18n-aria` for localized aria-labels instead of hardcoded `aria-label`.
+- Utilities.css restored `.dragging-light`/`.light-draggable` cursor classes (overwritten during Phase 2 edits, now merged).
+
+### Verified
+
+- `vitest run` — 102 tests passing (7 files)
+- `vite build` — production bundle with PWA precache
+
 ## [0.4.1] - 2026-05-07
 
 ### Fixed

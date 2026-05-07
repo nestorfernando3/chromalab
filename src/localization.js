@@ -31,7 +31,12 @@ const COPY = {
             lessonsToggle: 'Lecciones',
             controlsToggle: 'Controles',
             curriculumToggle: 'Currículo',
-            curriculumToggleTitle: 'Ver currículo de lecciones'
+            curriculumToggleTitle: 'Ver currículo de lecciones',
+            curriculumAria: 'Abrir currículo',
+            curriculumTitle: 'Ver currículo'
+        },
+        accessibility: {
+            skipLink: 'Saltar al contenido principal'
         },
         sections: {
             goal: 'Tu Objetivo',
@@ -98,7 +103,7 @@ const COPY = {
         },
         controls: {
             dragIndicator: 'Arrastra la luz o ajusta sus valores aquí',
-            exposure: 'Exposición',
+            exposure: 'Exposición: brillo global de la escena',
             closeTip: 'Cerrar tip'
         },
         lightControls: {
@@ -142,6 +147,7 @@ const COPY = {
         response: {
             title: 'Tu Observación',
             placeholder: 'Escribe tu observación aquí...',
+            unsaved: 'Sin guardar',
             saving: 'Guardando...',
             saved: 'Guardado localmente',
             currentValues: 'Paleta actual:',
@@ -167,9 +173,10 @@ const COPY = {
             palette: 'Paleta',
             hue: 'Matiz',
             saturation: 'Saturación',
-            value: 'Valor (HSV)',
+            value: 'Valor (HSV): claridad del color',
             harmony: 'Armonía',
             applyToLight: 'Aplicar a luz principal',
+            applyToPrefix: 'Aplicar a',
             applyToBackground: 'Aplicar a fondo',
             valueNote: 'Valor cambia el color. Exposición cambia toda la escena.'
         },
@@ -199,7 +206,10 @@ const COPY = {
             title: 'Lección completada',
             defaultMessage: 'Completaste la misión de aprendizaje.',
             next: 'Siguiente lección',
-            review: 'Revisar evidencia'
+            review: 'Revisar evidencia',
+            paletteLabel: 'Paleta',
+            observationLabel: 'Observación',
+            stepsLabel: 'Pasos'
         }
     },
     en: {
@@ -217,7 +227,12 @@ const COPY = {
             lessonsToggle: 'Lessons',
             controlsToggle: 'Controls',
             curriculumToggle: 'Curriculum',
-            curriculumToggleTitle: 'View lesson curriculum'
+            curriculumToggleTitle: 'View lesson curriculum',
+            curriculumAria: 'Open curriculum',
+            curriculumTitle: 'View curriculum'
+        },
+        accessibility: {
+            skipLink: 'Skip to main content'
         },
         sections: {
             goal: 'Your Goal',
@@ -328,6 +343,7 @@ const COPY = {
         response: {
             title: 'Your Observation',
             placeholder: 'Write your observation here...',
+            unsaved: 'Unsaved',
             saving: 'Saving...',
             saved: 'Saved locally',
             currentValues: 'Current palette:',
@@ -353,9 +369,10 @@ const COPY = {
             palette: 'Palette',
             hue: 'Hue',
             saturation: 'Saturation',
-            value: 'Value (HSV)',
+            value: 'Value (HSV): color brightness',
             harmony: 'Harmony',
             applyToLight: 'Apply to key light',
+            applyToPrefix: 'Apply to',
             applyToBackground: 'Apply to background',
             valueNote: 'Value changes the color. Exposure changes the whole scene.'
         },
@@ -385,7 +402,10 @@ const COPY = {
             title: 'Lesson complete',
             defaultMessage: 'You completed the learning mission.',
             next: 'Next lesson',
-            review: 'Review evidence'
+            review: 'Review evidence',
+            paletteLabel: 'Palette',
+            observationLabel: 'Observation',
+            stepsLabel: 'Steps'
         }
     }
 };

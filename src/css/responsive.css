@@ -1,4 +1,9 @@
 /* ========== Responsive ========== */
+
+html, body {
+  overflow-x: hidden;
+}
+
 @media (max-width: 1100px) {
   .teach-panel {
     width: 320px;
@@ -27,6 +32,7 @@
     z-index: 200;
     transform: translateY(100%);
     transition: transform var(--transition-normal);
+    overflow-x: hidden;
   }
 
   .controls-panel:not(.collapsed) {
@@ -49,6 +55,10 @@
 
   .copyright-footer {
     display: none;
+  }
+
+  .scene-feedback {
+    max-width: calc(100vw - 32px);
   }
 
   /* Larger touch targets */
@@ -79,6 +89,111 @@
   }
 }
 
+@media (max-width: 500px) {
+  .header-title h1 {
+    font-size: 16px;
+  }
+
+  .header-subtitle {
+    display: none;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .teach-panel {
+    height: 55vh;
+    max-height: 55vh;
+  }
+
+  .controls-panel {
+    max-height: 40vh;
+  }
+
+  .lesson-title {
+    font-size: 18px;
+  }
+
+  .goal-section p {
+    font-size: 13px;
+  }
+
+  .observe-list li {
+    font-size: 12px;
+  }
+}
+
+/* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 300;
+    height: 56px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    border-top: 1px solid var(--glass-border-subtle);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .bottom-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    min-height: 44px;
+    min-width: 44px;
+    font: inherit;
+  }
+
+  .bottom-nav-btn:hover {
+    color: var(--text-secondary);
+  }
+
+  .bottom-nav-btn[aria-current="page"],
+  .bottom-nav-btn.active {
+    color: var(--upca-red-light);
+  }
+
+  .bottom-nav-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .teach-panel,
+  .controls-panel {
+    padding-bottom: 56px;
+  }
+
+  .palette-strip {
+    bottom: calc(56px + 12px);
+  }
+
+  .status-toast,
+  .screenshot-toast {
+    bottom: calc(56px + var(--space-4));
+  }
+}
+
 @media (max-width: 700px) {
   .teach-panel {
     top: auto;
@@ -88,6 +203,7 @@
     width: 100%;
     height: 45vh;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    overflow-x: hidden;
   }
 
   .floating-tip {

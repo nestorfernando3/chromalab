@@ -51,9 +51,13 @@ export class UI {
         this.session.onChange((type, data) => {
             if (type === 'lessonCompleted') {
                 this._showToast('status.lessonCompleted');
+                const paletteColors = this.colorSystem?.palette || [];
+                const observation = this.progressEngine?.getObservation(this.session.currentPreset?.id) || '';
                 this.completionModal.show({
                     preset: this.session.currentPreset,
-                    completedLabels: (this.session.currentPreset?.checklist || []).map(item => item.id)
+                    completedLabels: (this.session.currentPreset?.checklist || []).map(item => item.id),
+                    paletteColors,
+                    observation
                 });
             } else if (type === 'lessonLoaded' && data?.preset) {
                 this._onSessionLessonLoaded(data.preset);
@@ -138,6 +142,7 @@ export class UI {
 
         this._setupExploreModeToggle();
         this._setupControlGroupToggle();
+        this._setupBottomNav();
         this._updateLayoutMode();
         this._setupLayoutResizeListener();
 
@@ -442,7 +447,6 @@ export class UI {
         const cgModel = document.getElementById('cg-model');
 
         if (this.exploreMode) {
-            // Expand all groups in explore mode
             [cgPalette, cgLights, cgEnvironment, cgModel].forEach(g => {
                 if (g) {
                     g.classList.remove('collapsed');
@@ -450,9 +454,10 @@ export class UI {
                     if (header) header.setAttribute('aria-expanded', 'true');
                 }
             });
+            const sandbox = document.getElementById('sandbox-toolbar');
+            if (sandbox) sandbox.classList.add('explore-only');
         } else {
-            // In guided mode, collapse environment by default; keep model expanded
-            [cgEnvironment].forEach(g => {
+            [cgEnvironment, cgModel].forEach(g => {
                 if (g) {
                     g.classList.add('collapsed');
                     const header = g.querySelector('.control-group-header');
@@ -466,6 +471,8 @@ export class UI {
                     if (header) header.setAttribute('aria-expanded', 'true');
                 }
             });
+            const sandbox = document.getElementById('sandbox-toolbar');
+            if (sandbox) sandbox.classList.remove('explore-only');
         }
     }
 
@@ -541,6 +548,38 @@ export class UI {
             el?.classList.add('control-target-pulse');
             setTimeout(() => el?.classList.remove('control-target-pulse'), 2200);
         }
+    }
+
+    // ── Bottom Nav ────────────────────────────────────────────────────────────
+
+    _setupBottomNav() {
+        const nav = document.getElementById('mobile-bottom-nav');
+        if (!nav) return;
+        nav.addEventListener('click', (e) => {
+            const btn = e.target.closest('.bottom-nav-btn');
+            if (!btn) return;
+            const surface = btn.dataset.surface;
+            nav.querySelectorAll('.bottom-nav-btn').forEach(b => b.removeAttribute('aria-current'));
+            btn.setAttribute('aria-current', 'page');
+            switch (surface) {
+                case 'lab':
+                    this._setMobilePanel('teach', false);
+                    this._setMobilePanel('controls', false);
+                    break;
+                case 'lesson':
+                    this._setMobilePanel('teach', true);
+                    this._setMobilePanel('controls', false);
+                    break;
+                case 'controls':
+                    this._setMobilePanel('controls', true);
+                    this._setMobilePanel('teach', false);
+                    break;
+                case 'evidence':
+                    this._setMobilePanel('teach', true);
+                    this._setMobilePanel('controls', false);
+                    break;
+            }
+        });
     }
 
     // ── Scene Feedback ────────────────────────────────────────────────────────
@@ -787,6 +826,8 @@ export class UI {
             this.completionModal?.close();
             const compLayer = document.getElementById('comparison-layer');
             compLayer?.classList.remove('split-active');
+            this._setMobilePanel('teach', false);
+            this._setMobilePanel('controls', false);
         });
     }
 

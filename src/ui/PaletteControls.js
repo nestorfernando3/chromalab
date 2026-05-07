@@ -122,7 +122,8 @@ export class PaletteControls {
         if (keyLight) {
             const btnApplyLight = document.createElement('button');
             btnApplyLight.className = 'btn btn-ghost palette-action-btn';
-            btnApplyLight.textContent = copy.applyToLight;
+            const lightName = keyLight.name?.es || keyLight.name?.en || keyLight.name || copy.applyToLight;
+            btnApplyLight.textContent = `${copy.applyToPrefix || 'Aplicar a'} ${lightName}`;
             btnApplyLight.addEventListener('click', () => {
                 this.colorSystem.applyToLight(keyLight.id, this.lightingSystem);
             });
@@ -195,12 +196,15 @@ export class PaletteControls {
         const wrapper = document.createElement('div');
         wrapper.className = 'control-row compact';
 
+        const harmonyLabelId = 'harmony-select-label';
         const label = document.createElement('span');
         label.className = 'control-label';
+        label.id = harmonyLabelId;
         label.textContent = (this._getCopy(lang).harmony || 'Armonía');
 
         const select = document.createElement('select');
         select.className = 'palette-select';
+        select.setAttribute('aria-labelledby', harmonyLabelId);
         HARMONY_TYPES.forEach(ht => {
             const option = document.createElement('option');
             option.value = ht.id;

@@ -21,6 +21,7 @@
 </head>
 
 <body>
+  <a href="#teach-panel" class="skip-link" data-i18n="accessibility.skipLink">Saltar al contenido principal</a>
   <canvas id="scene-canvas"></canvas>
 
   <div id="app" class="app">
@@ -52,11 +53,11 @@
         <button class="icon-button" id="btn-curriculum" type="button" data-i18n-title="header.curriculumTitle" data-i18n-aria="header.curriculumAria">
           <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M5 5.5h6.5v13H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5ZM12.5 5.5H19A1.5 1.5 0 0 1 20.5 7v10a1.5 1.5 0 0 1-1.5 1.5h-6.5v-13Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         </button>
-        <button class="mobile-panel-toggle" id="mobile-teach-toggle" type="button" aria-controls="teach-panel" aria-expanded="false" aria-label="Lecciones">
+        <button class="mobile-panel-toggle" id="mobile-teach-toggle" type="button" aria-controls="teach-panel" aria-expanded="false" data-i18n-aria="header.lessonsToggle">
           <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <span data-i18n="header.lessonsToggle">Lecciones</span>
         </button>
-        <button class="mobile-panel-toggle" id="mobile-controls-toggle" type="button" aria-controls="controls-panel" aria-expanded="false" aria-label="Controles">
+        <button class="mobile-panel-toggle" id="mobile-controls-toggle" type="button" aria-controls="controls-panel" aria-expanded="false" data-i18n-aria="header.controlsToggle">
           <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 3.5v2.2M12 18.3v2.2M4.8 6.8l1.5 1.5M17.7 17.7l1.5 1.5M3.5 12h2.2M18.3 12h2.2M6.3 17.7l1.5-1.5M17.7 6.3l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
           <span data-i18n="header.controlsToggle">Controles</span>
         </button>
@@ -350,6 +351,26 @@
 
     <!-- Scrim -->
     <div class="app-scrim" id="app-scrim" aria-hidden="true"></div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Surfaces">
+      <button class="bottom-nav-btn" data-surface="lab" aria-current="page">
+        <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true" width="18" height="18"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5v9M7.5 12h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="bottom-nav-label" data-i18n="mobileNav.lab">Lab</span>
+      </button>
+      <button class="bottom-nav-btn" data-surface="lesson">
+        <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true" width="18" height="18"><path d="M5 5.5h3.5v13H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5ZM11 5.5H19A1.5 1.5 0 0 1 20.5 7v10a1.5 1.5 0 0 1-1.5 1.5H11v-13Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span class="bottom-nav-label" data-i18n="mobileNav.lesson">Lección</span>
+      </button>
+      <button class="bottom-nav-btn" data-surface="controls">
+        <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true" width="18" height="18"><path d="M12 3.5v2.1M12 18.4v2.1M4.9 6.9l1.5 1.5M17.6 17.6l1.5 1.5M3.5 12h2.1M18.4 12h2.1M6.4 17.6l1.5-1.5M17.6 6.4l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span class="bottom-nav-label" data-i18n="mobileNav.controls">Controles</span>
+      </button>
+      <button class="bottom-nav-btn" data-surface="evidence">
+        <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true" width="18" height="18"><path d="M4 6.5h16M4 12h16M4 17.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="bottom-nav-label" data-i18n="mobileNav.evidence">Evidencia</span>
+      </button>
+    </nav>
 
     <!-- Static UI Mount Points -->
     <div class="lesson-rail" id="lesson-rail" aria-hidden="true"></div>

@@ -8,6 +8,7 @@ export default class CurriculumDrawer {
     this._getCopy = getCopy;
     this._onSelect = onSelectLesson;
     this._container = document.getElementById('curriculum-drawer');
+    this._lastFocused = null;
   }
 
   render({ lessons, currentId, completedIds = [], lockedIds = [] }) {
@@ -53,10 +54,13 @@ export default class CurriculumDrawer {
 
   open() {
     this._container?.classList.add(DRAWER_OPEN_CLASS);
+    this._lastFocused = document.activeElement;
+    this._trapFocus();
   }
 
   close() {
     this._container?.classList.remove(DRAWER_OPEN_CLASS);
+    this._restoreFocus();
   }
 
   isOpen() {
@@ -66,5 +70,41 @@ export default class CurriculumDrawer {
   toggle() {
     if (this.isOpen()) this.close();
     else this.open();
+  }
+
+  _trapFocus() {
+    if (!this._container) return;
+    const focusable = this._container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const handler = (e) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    this._trapHandler = handler;
+    this._container.addEventListener('keydown', handler);
+    focusable[0].focus();
+  }
+
+  _restoreFocus() {
+    if (this._trapHandler && this._container) {
+      this._container.removeEventListener('keydown', this._trapHandler);
+      this._trapHandler = null;
+    }
+    if (this._lastFocused && typeof this._lastFocused.focus === 'function') {
+      this._lastFocused.focus();
+    }
+    this._lastFocused = null;
   }
 }

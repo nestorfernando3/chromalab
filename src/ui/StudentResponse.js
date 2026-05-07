@@ -14,6 +14,13 @@ export class StudentResponse {
         this._textarea = null;
         this._saveStatusEl = null;
         this._saveTimeout = null;
+        this._state = 'empty';
+
+        this._onCompletionChanged = (payload) => {
+            if (payload?.lessonId === this._currentLessonId) {
+                this._setState('completed');
+            }
+        };
     }
 
     render(lessonId, preset) {
@@ -118,6 +125,18 @@ export class StudentResponse {
         appEvents.on('color:saturationChanged', this._onColorChange);
         appEvents.on('color:valueChanged', this._onColorChange);
         appEvents.on('palette:previewChanged', this._onColorChange);
+
+        // Listen for lesson completion
+        appEvents.on('lesson:completed', this._onCompletionChanged);
+
+        // Set initial state
+        if (existingObservation) {
+            this._setState('saved');
+        } else if (allRequiredDone) {
+            this._setState('completed');
+        } else {
+            this._setState('empty');
+        }
     }
 
     _renderCompletionSummary(container, message, copy) {
@@ -178,6 +197,35 @@ export class StudentResponse {
             appEvents.off('color:valueChanged', this._onColorChange);
             appEvents.off('palette:previewChanged', this._onColorChange);
         }
+        appEvents.off('lesson:completed', this._onCompletionChanged);
+    }
+
+    _setState(state) {
+        this._state = state;
+        if (!this._saveStatusEl) return;
+        const copy = this._getCopy(this.getLang());
+        switch (state) {
+            case 'empty':
+                this._saveStatusEl.textContent = '';
+                this._saveStatusEl.className = 'response-status';
+                break;
+            case 'dirty':
+                this._saveStatusEl.textContent = copy.unsaved || '';
+                this._saveStatusEl.className = 'response-status response-status-dirty';
+                break;
+            case 'saving':
+                this._saveStatusEl.textContent = copy.saving;
+                this._saveStatusEl.className = 'response-status response-status-saving';
+                break;
+            case 'saved':
+                this._saveStatusEl.textContent = `${copy.saved} — ${new Date().toLocaleTimeString()}`;
+                this._saveStatusEl.className = 'response-status response-status-saved';
+                break;
+            case 'completed':
+                this._saveStatusEl.textContent = copy.lessonCompleteLabel || 'Completada';
+                this._saveStatusEl.className = 'response-status response-status-completed';
+                break;
+        }
     }
 
     _onInput() {
@@ -185,16 +233,23 @@ export class StudentResponse {
         const lessonId = this._currentLessonId;
 
         if (this._saveTimeout) clearTimeout(this._saveTimeout);
-        this._saveStatusEl.textContent = this._getCopy(this.getLang()).saving;
+
+        if (!text.trim()) {
+            this._setState('empty');
+            return;
+        }
+
+        this._setState('dirty');
 
         this._saveTimeout = setTimeout(() => {
+            this._setState('saving');
             if (this.progressEngine) {
                 this.progressEngine.setObservation(lessonId, text);
             }
             if (this.evidenceStore) {
                 this.evidenceStore.saveResponse(lessonId, { observation: text });
             }
-            this._saveStatusEl.textContent = this._getCopy(this.getLang()).saved;
+            this._setState('saved');
         }, 600);
     }
 
