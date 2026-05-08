@@ -19,6 +19,7 @@ body.explore-mode .explore-only {
   position: fixed;
   top: 65px;
   right: var(--space-4);
+  bottom: var(--space-4);
   width: 290px;
   background: var(--glass-bg);
   backdrop-filter: blur(50px) saturate(180%);
@@ -26,6 +27,8 @@ body.explore-mode .explore-only {
   border: 1px solid var(--glass-border-subtle);
   border-radius: var(--radius-xl);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-lg);
   animation: slideInRight 0.5s var(--ease-out);
@@ -80,6 +83,9 @@ body.explore-mode .explore-only {
 }
 
 .controls-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 0 var(--space-4) var(--space-4);
 }
 

@@ -62,8 +62,16 @@ export class EvidenceStore {
         return JSON.parse(JSON.stringify(this._data));
     }
 
-    exportToJSON() {
-        return JSON.stringify(this._data, null, 2);
+    exportToJSON(getPresetName = null) {
+        const exportData = JSON.parse(JSON.stringify(this._data));
+        exportData.exportedAt = new Date().toISOString();
+        
+        if (getPresetName) {
+            for (const [id, lesson] of Object.entries(exportData.lessons)) {
+                lesson.lessonName = getPresetName(id) || id;
+            }
+        }
+        return JSON.stringify(exportData, null, 2);
     }
 
     reset() {

@@ -210,6 +210,17 @@ export class UI {
 
     _onSessionLessonLoaded(preset) {
         if (!preset) return;
+
+        // Save current color state before switching
+        if (this.colorSystem && this.colorSystem.lessonId) {
+            this.evidenceStore.saveColorState(this.colorSystem.lessonId, {
+                hue: this.colorSystem.hue,
+                saturation: this.colorSystem.saturation,
+                value: this.colorSystem.value,
+                harmonyType: this.colorSystem.harmonyType
+            });
+        }
+
         if (this.paletteControls) {
             this.paletteControls.destroy();
             this.paletteControls = null;
@@ -218,6 +229,17 @@ export class UI {
             this.studentResponse.destroy();
         }
         this.colorSystem = new ColorSystem({ preset });
+        
+        // Restore saved color state if exists
+        const savedEvidence = this.evidenceStore.getLessonEvidence(preset.id);
+        if (savedEvidence && savedEvidence.colorState) {
+            const cs = savedEvidence.colorState;
+            if (cs.hue !== undefined) this.colorSystem.setHue(cs.hue);
+            if (cs.saturation !== undefined) this.colorSystem.setSaturation(cs.saturation);
+            if (cs.value !== undefined) this.colorSystem.setValue(cs.value);
+            if (cs.harmonyType) this.colorSystem.setHarmonyType(cs.harmonyType);
+        }
+
         this.paletteControls = new PaletteControls(
             this.colorSystem,
             () => this.session.currentPreset,
@@ -229,7 +251,6 @@ export class UI {
             preset.checklist || [],
             preset.completionRules || {}
         );
-        this.evidenceStore = new EvidenceStore();
 
         appEvents.on('palette:applied', (payload) => {
             if (payload.lessonId === preset.id) {
@@ -407,6 +428,21 @@ export class UI {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     header.click();
+                }
+            });
+        });
+
+        // ── Teach-panel collapsible sections ──
+        document.querySelectorAll('.collapsible-trigger').forEach(trigger => {
+            const toggle = () => {
+                const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+                trigger.setAttribute('aria-expanded', String(!isExpanded));
+            };
+            trigger.addEventListener('click', toggle);
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle();
                 }
             });
         });
@@ -701,6 +737,7 @@ export class UI {
         this.lightControls.renderLightSelector(localizedPreset, selectedId);
 
         if (newConfig) {
+            appEvents.emit('light:added', { lessonId: preset.id, count: preset.lights.length });
             const localizedLight = localizedPreset.lights.find(light => light.id === newConfig.id);
             if (localizedLight) {
                 this.lightControls.selectLight(localizedLight);
@@ -744,6 +781,10 @@ export class UI {
 
         document.getElementById('btn-screenshot')?.addEventListener('click', () => {
             this.screenshotExporter.takeScreenshot();
+        });
+
+        document.getElementById('btn-export')?.addEventListener('click', () => {
+            this._exportEvidence();
         });
 
         document.getElementById('btn-curriculum')?.addEventListener('click', () => {
@@ -973,6 +1014,29 @@ export class UI {
 
     _getCompletedLessonIndexes() {
         return this.session.getCompletedIndexes();
+    }
+
+    _exportEvidence() {
+        if (!this.evidenceStore) return;
+        const json = this.evidenceStore.exportToJSON((lessonId) => {
+            const index = this.session.presetNames.indexOf(lessonId);
+            if (index >= 0) {
+                const p = this.session.presets[index];
+                const loc = p.name?.[this.lang] || p.name?.es || p.name;
+                return loc;
+            }
+            return lessonId;
+        });
+
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `chromalab_evidence_${new Date().getTime()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     _isMobileLayout() {

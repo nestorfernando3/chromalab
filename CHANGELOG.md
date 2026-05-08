@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0] - 2026-05-08
+
+### Added
+
+- **Pedagogical Tuning (Phase 5)**: Harmonies locked and auto-applied in lessons 2, 3, 4. Added special controls: contrast toggle button in Lesson 5, emotion selector in Lesson 6, and animated temperature toggle button in Lesson 7. Sandbox requires minimum 3 lights.
+- **Interactive Onboarding Tour (Phase 6)**: Added a "Joyride" tour in `src/onboarding.js` that visually highlights the mission panel, controls panel, and progress bar with pulse animations and translated tooltips.
+- **Deployment Prep (Phase 7)**: Added "Export Evidence" button to the header with `src/localization.js` translation strings. Generates a local JSON file mapped to human-readable lesson names.
+
+### Changed
+
+- **`src/lessonProgress.js`**: Engine upgraded to support event requirement counting (`count: 3`).
+- **`src/ui.js`**: Added dynamic rendering of custom buttons (e.g., `temperatureToggle`) within `PaletteControls` based on lesson preset configuration.
+
 ## [0.5.0] - 2026-05-07
 
 ### Added

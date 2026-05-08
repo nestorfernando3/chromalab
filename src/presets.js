@@ -44,9 +44,9 @@ const presets = {
         mission: { es: 'Crea un color oceánico ajustando matiz, saturación y valor.', en: 'Create an ocean-like color by adjusting hue, saturation, and value.' },
         completionMessage: { es: 'Creaste un color cian oceánico y lo aplicaste a la escena.', en: 'You created an ocean-like cyan and applied it to the scene.' },
         lights: [
-            { id: 'hsv-key', name: { es: 'Luz Principal', en: 'Key Light' }, type: 'key', position: { x: 2.5, y: 3.2, z: 2.0 }, intensity: 3.0, color: '#e6f0ff', role: { es: 'Observa cómo cambia el color de la luz', en: 'Observe how the light color changes' } },
-            { id: 'hsv-fill', name: { es: 'Luz de Relleno', en: 'Fill Light' }, type: 'fill', position: { x: -2.0, y: 2.2, z: 2.5 }, intensity: 0.6, color: '#f0e6ff', role: { es: 'Luz secundaria con otro matiz', en: 'Secondary light with another hue' } },
-            { id: 'hsv-back', name: { es: 'Luz de Fondo', en: 'Background Light' }, type: 'back', position: { x: 0, y: 2.8, z: -2.5 }, intensity: 1.2, color: '#ffe6e6', role: { es: 'Tinte de fondo', en: 'Backdrop tint' } }
+            { id: 'hsv-key', name: { es: 'Luz Principal', en: 'Key Light' }, type: 'key', position: { x: 2.5, y: 3.2, z: 2.0 }, intensity: 3.8, color: '#e6f0ff', role: { es: 'Observa cómo cambia el color de la luz', en: 'Observe how the light color changes' } },
+            { id: 'hsv-fill', name: { es: 'Luz de Relleno', en: 'Fill Light' }, type: 'fill', position: { x: -2.0, y: 2.2, z: 2.5 }, intensity: 1.2, color: '#f0e6ff', role: { es: 'Luz secundaria con otro matiz', en: 'Secondary light with another hue' } },
+            { id: 'hsv-back', name: { es: 'Luz de Fondo', en: 'Background Light' }, type: 'back', position: { x: 0, y: 2.8, z: -2.5 }, intensity: 2.0, color: '#ffe6e6', role: { es: 'Tinte de fondo', en: 'Backdrop tint' } }
         ]
     },
     complementary: {
@@ -61,6 +61,8 @@ const presets = {
         lightness: 0.5,
         colorModel: 'hsv',
         learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        allowedHarmonies: ['single', 'complementary'],
+        autoApplyPalette: true,
         paletteTargets: ['keyLight', 'fillLight', 'background'],
         checklist: [
             { id: 'adjust-hue', event: 'color:hueChanged', required: true },
@@ -103,6 +105,8 @@ const presets = {
         value: 0.5,
         colorModel: 'hsv',
         learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        allowedHarmonies: ['analogous'],
+        autoApplyPalette: true,
         paletteTargets: ['keyLight', 'fillLight', 'rimLight'],
         checklist: [
             { id: 'adjust-hue', event: 'color:hueChanged', required: true },
@@ -140,6 +144,8 @@ const presets = {
         value: 0.5,
         colorModel: 'hsv',
         learningControls: ['hue', 'saturation', 'value', 'harmony'],
+        allowedHarmonies: ['triadic'],
+        autoApplyPalette: true,
         paletteTargets: ['keyLight', 'fillLight', 'rimLight'],
         checklist: [
             { id: 'adjust-hue', event: 'color:hueChanged', required: true },
@@ -178,6 +184,8 @@ const presets = {
         colorModel: 'hsv',
         learningControls: ['hue', 'saturation', 'value'],
         paletteTargets: ['background'],
+        autoApplyPalette: true,
+        specialControls: ['contrastToggle'],
         checklist: [
             { id: 'apply-color', event: 'palette:applied', required: true },
             { id: 'compare-versions', event: 'palette:applied', required: true },
@@ -220,6 +228,8 @@ const presets = {
         colorModel: 'hsv',
         learningControls: ['hue', 'saturation', 'value', 'harmony'],
         paletteTargets: ['keyLight', 'fillLight', 'rimLight'],
+        autoApplyPalette: true,
+        specialControls: ['emotionSelector'],
         checklist: [
             { id: 'adjust-hue', event: 'color:hueChanged', required: true },
             { id: 'apply-color', event: 'palette:applied', required: true },
@@ -258,6 +268,8 @@ const presets = {
         colorModel: 'hsv',
         learningControls: ['hue', 'saturation', 'value', 'harmony'],
         paletteTargets: ['keyLight', 'fillLight'],
+        autoApplyPalette: true,
+        specialControls: ['temperatureToggle'],
         checklist: [
             { id: 'adjust-hue', event: 'color:hueChanged', required: true },
             { id: 'apply-color', event: 'palette:applied', required: true },
@@ -304,7 +316,7 @@ const presets = {
         learningControls: ['hue', 'saturation', 'value', 'harmony'],
         paletteTargets: ['keyLight', 'fillLight', 'rimLight', 'background'],
         checklist: [
-            { id: 'add-light', event: 'light:added', required: true },
+            { id: 'add-light', event: 'light:added', required: true, count: 3 },
             { id: 'apply-color', event: 'palette:applied', required: true },
             { id: 'take-screenshot', event: 'screenshotTaken', required: true },
             { id: 'write-observation', event: 'lesson:responseChanged', required: true }

@@ -15,11 +15,11 @@ document.body.classList.toggle('embed-mode', runtimeConfig.embed);
 const canvas = document.getElementById('scene-canvas');
 const scene = new Scene();
 scene.background = new Color(0x080810);
-scene.fog = new FogExp2(0x080810, 0.04);
+scene.fog = new FogExp2(0x080810, 0.025);
 
 // Camera
 const camera = new PerspectiveCamera(
-    40,
+    45,
     window.innerWidth / window.innerHeight,
     0.1,
     100
@@ -38,7 +38,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 renderer.toneMapping = ACESFilmicToneMapping;
-renderer.toneMappingExposure = 2.0;
+renderer.toneMappingExposure = 1.6;
 renderer.outputColorSpace = SRGBColorSpace;
 
 // Orbit controls

@@ -68,6 +68,9 @@
           data-i18n-aria="header.screenshotAria">
           <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M7 6.5h3l1.1-1.6h1.8L14 6.5h3A2.5 2.5 0 0 1 19.5 9v7A2.5 2.5 0 0 1 17 18.5H7A2.5 2.5 0 0 1 4.5 16V9A2.5 2.5 0 0 1 7 6.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
         </button>
+        <button class="icon-button" id="btn-export" type="button" data-i18n-title="header.exportTitle" data-i18n-aria="header.exportAria">
+          <svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 4v12M8 12l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
       </div>
     </header>
 
@@ -93,52 +96,66 @@
       </div>
 
       <div class="panel-scroll">
-        <div class="goal-section">
-          <div class="section-label">
-            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span class="label-text" data-i18n="sections.goal">Tu Objetivo</span>
-          </div>
-          <p id="goal-text">Aprende teoría del color de forma interactiva.</p>
-        </div>
-
+        <!-- PRIORITY: Mission + Steps + Response (visible without scroll) -->
         <div id="lesson-mission"></div>
-
-        <div class="observe-section">
-          <div class="section-label">
-            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-            <span class="label-text" data-i18n="sections.observe">Qué Observar</span>
-          </div>
-          <ul class="observe-list" id="observe-list"></ul>
-        </div>
-
-        <div class="practice-section">
-          <div class="section-label">
-            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M6 4.8h8l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 19V6.3A1.5 1.5 0 0 1 6.5 4.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 4.8V9h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 12h6M7.5 15h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span class="label-text" data-i18n="sections.practice">Práctica</span>
-          </div>
-          <div class="practice-card">
-            <div class="practice-block">
-              <span class="practice-label" data-i18n="practice.task">Tarea</span>
-              <p id="task-text"></p>
-            </div>
-            <div class="practice-block">
-              <span class="practice-label" data-i18n="practice.output">Qué entregar</span>
-              <p id="output-text"></p>
-            </div>
-          </div>
-        </div>
 
         <div class="checklist-section" id="lesson-checklist"></div>
 
         <div class="response-section" id="student-response"></div>
 
-        <div class="diagram-section">
-          <div class="section-label">
+        <!-- SECONDARY: Theory (collapsible) -->
+        <div class="goal-section collapsible-section" id="goal-section-wrap">
+          <div class="section-label collapsible-trigger" role="button" tabindex="0" aria-expanded="true" aria-controls="goal-section-body">
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span class="label-text" data-i18n="sections.goal">Tu Objetivo</span>
+            <svg class="collapse-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div id="goal-section-body">
+            <p id="goal-text">Aprende teoría del color de forma interactiva.</p>
+          </div>
+        </div>
+
+        <div class="observe-section collapsible-section">
+          <div class="section-label collapsible-trigger" role="button" tabindex="0" aria-expanded="true" aria-controls="observe-section-body">
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            <span class="label-text" data-i18n="sections.observe">Qué Observar</span>
+            <svg class="collapse-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div id="observe-section-body">
+            <ul class="observe-list" id="observe-list"></ul>
+          </div>
+        </div>
+
+        <div class="practice-section collapsible-section">
+          <div class="section-label collapsible-trigger" role="button" tabindex="0" aria-expanded="false" aria-controls="practice-section-body">
+            <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M6 4.8h8l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 19V6.3A1.5 1.5 0 0 1 6.5 4.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 4.8V9h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 12h6M7.5 15h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span class="label-text" data-i18n="sections.practice">Práctica</span>
+            <svg class="collapse-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div id="practice-section-body" class="collapsed-body">
+            <div class="practice-card">
+              <div class="practice-block">
+                <span class="practice-label" data-i18n="practice.task">Tarea</span>
+                <p id="task-text"></p>
+              </div>
+              <div class="practice-block">
+                <span class="practice-label" data-i18n="practice.output">Qué entregar</span>
+                <p id="output-text"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram-section collapsible-section">
+          <div class="section-label collapsible-trigger" role="button" tabindex="0" aria-expanded="false" aria-controls="diagram-section-body">
             <svg viewBox="0 0 24 24" class="icon-svg icon" aria-hidden="true"><path d="M4.5 18.5V5.5h13l2 2v11h-13Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 14l8-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 18.5h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span class="label-text" data-i18n="sections.diagram">Rueda Cromática</span>
+            <svg class="collapse-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div class="diagram-container">
-            <svg class="diagram-svg" viewBox="0 0 200 200" id="lighting-diagram"></svg>
+          <div id="diagram-section-body" class="collapsed-body">
+            <div class="diagram-container">
+              <svg class="diagram-svg" viewBox="0 0 200 200" id="lighting-diagram"></svg>
+            </div>
           </div>
         </div>
 

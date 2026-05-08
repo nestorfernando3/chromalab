@@ -3,14 +3,22 @@ import { EvidenceStore } from '../src/evidenceStore.js';
 
 describe('EvidenceStore', () => {
     let store;
+    let mockStorage = {};
 
     beforeEach(() => {
+        global.localStorage = {
+            getItem: (key) => mockStorage[key] || null,
+            setItem: (key, value) => { mockStorage[key] = String(value); },
+            removeItem: (key) => { delete mockStorage[key]; },
+            clear: () => { mockStorage = {}; }
+        };
         store = new EvidenceStore();
         store.reset();
     });
 
     afterEach(() => {
         store.reset();
+        mockStorage = {};
     });
 
     it('returns null for unknown lesson', () => {

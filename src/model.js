@@ -457,8 +457,8 @@ export function createEnvironment(scene) {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // Ambient light
-    const ambientLight = new AmbientLight(0x404060, 0.5);
+    // Ambient light — neutral, soft enough to reveal reference objects without washing out colored lights
+    const ambientLight = new AmbientLight(0xd0d8e8, 0.25);
     scene.add(ambientLight);
 
     return { ground, backdrop, ambientLight };
@@ -489,7 +489,7 @@ export function setBackdropColor(scene, environment, colorHex) {
     if (scene.fog && scene.fog.isFogExp2) {
         scene.fog.color.set(color);
     } else {
-        scene.fog = new FogExp2(color, 0.04);
+        scene.fog = new FogExp2(color, 0.025);
     }
     if (environment.backdrop) {
         environment.backdrop.material.color.set(color);

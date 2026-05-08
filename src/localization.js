@@ -33,7 +33,9 @@ const COPY = {
             curriculumToggle: 'Currículo',
             curriculumToggleTitle: 'Ver currículo de lecciones',
             curriculumAria: 'Abrir currículo',
-            curriculumTitle: 'Ver currículo'
+            curriculumTitle: 'Ver currículo',
+            exportTitle: 'Exportar Evidencia (JSON)',
+            exportAria: 'Exportar archivo de evidencia'
         },
         accessibility: {
             skipLink: 'Saltar al contenido principal'
@@ -229,7 +231,9 @@ const COPY = {
             curriculumToggle: 'Curriculum',
             curriculumToggleTitle: 'View lesson curriculum',
             curriculumAria: 'Open curriculum',
-            curriculumTitle: 'View curriculum'
+            curriculumTitle: 'View curriculum',
+            exportTitle: 'Export Evidence (JSON)',
+            exportAria: 'Export evidence file'
         },
         accessibility: {
             skipLink: 'Skip to main content'

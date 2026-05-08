@@ -129,7 +129,14 @@ export class LessonProgressEngine {
         // Only mark criteria that actually exist in the lesson checklist
         if (!checklist.some(c => c.id === criteriaId)) return;
 
-        this._markCriterionCompleted(lessonId, criteriaId);
+        // Check for specific count requirement (like minimum 3 lights)
+        if (match?.count && payload?.count !== undefined) {
+            if (payload.count >= match.count) {
+                this._markCriterionCompleted(lessonId, criteriaId);
+            }
+        } else {
+            this._markCriterionCompleted(lessonId, criteriaId);
+        }
     }
 
     // ── Criteria evaluation ───────────────────────────────────────────────────

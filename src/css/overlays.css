@@ -281,3 +281,93 @@
   font-weight: 450;
 }
 
+/* --- Tour Guide (Joyride) --- */
+.tour-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9998;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tour-overlay.visible {
+  opacity: 1;
+}
+
+.tour-highlight {
+  position: relative !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  box-shadow: 0 0 0 4px var(--surface-1), 0 0 0 6px var(--upca-red), 0 0 20px rgba(196, 30, 58, 0.5) !important;
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  animation: tour-pulse 2s infinite;
+}
+
+@keyframes tour-pulse {
+  0% { box-shadow: 0 0 0 4px var(--surface-1), 0 0 0 6px rgba(196, 30, 58, 0.7); }
+  70% { box-shadow: 0 0 0 4px var(--surface-1), 0 0 0 10px rgba(196, 30, 58, 0); }
+  100% { box-shadow: 0 0 0 4px var(--surface-1), 0 0 0 6px rgba(196, 30, 58, 0); }
+}
+
+.tour-popover {
+  position: fixed;
+  z-index: 10000;
+  background: var(--surface-2);
+  border: 1px solid var(--border-color);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  width: 280px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+}
+
+.tour-popover.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tour-popover h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-md);
+  color: var(--text-primary);
+}
+
+.tour-popover p {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tour-step-counter {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tour-btn {
+  background: var(--upca-red);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tour-btn:hover {
+  background: var(--upca-red-light);
+}

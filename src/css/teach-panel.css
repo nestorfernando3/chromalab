@@ -136,10 +136,12 @@
   overflow-x: hidden;
 }
 
+
 /* Sections */
 .goal-section,
 .observe-section,
 .diagram-section,
+.practice-section,
 .lights-overview {
   padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--glass-border-subtle);
@@ -166,6 +168,58 @@
   font-size: 10px;
   margin-bottom: var(--space-2);
 }
+
+/* ========== Collapsible Sections ========== */
+.collapsible-trigger {
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+  padding: var(--space-1) 0;
+  transition: color var(--transition-fast);
+  border-radius: var(--radius-xs);
+}
+
+.collapsible-trigger:hover {
+  color: var(--text-primary);
+}
+
+.collapsible-trigger:focus-visible {
+  outline: 2px solid var(--upca-red);
+  outline-offset: 2px;
+}
+
+.collapse-chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+  opacity: 0.5;
+}
+
+.collapsible-trigger[aria-expanded="false"] .collapse-chevron {
+  transform: rotate(-90deg);
+}
+
+/* Bodies that start collapsed */
+.collapsed-body {
+  display: none;
+}
+
+/* When trigger is expanded, show body */
+.collapsible-trigger[aria-expanded="true"] + [id$="-body"],
+.collapsible-trigger[aria-expanded="true"] ~ [id$="-body"] {
+  display: block;
+}
+
+/* Give collapsible triggers breathing room */
+.collapsible-section .section-label {
+  margin-bottom: 0;
+}
+
+.collapsible-section .section-label[aria-expanded="true"] {
+  margin-bottom: var(--space-3);
+}
+
+
 
 .goal-section p {
   font-size: 15px;

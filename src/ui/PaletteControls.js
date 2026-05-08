@@ -30,11 +30,18 @@ export class PaletteControls {
                 this._updatePreview();
             }
         };
+        this._onLightSelected = (payload) => {
+            if (payload.lessonId === this.colorSystem?.lessonId) {
+                this._selectedLightId = payload.light?.id;
+            }
+        };
         appEvents.on('palette:previewChanged', this._onPalettePreviewChanged);
+        appEvents.on('light:selected', this._onLightSelected);
     }
 
     destroy() {
         appEvents.off('palette:previewChanged', this._onPalettePreviewChanged);
+        appEvents.off('light:selected', this._onLightSelected);
     }
 
     render() {
@@ -110,7 +117,11 @@ export class PaletteControls {
         if (controls.includes('value')) {
             this._valueNoteEl = document.createElement('p');
             this._valueNoteEl.className = 'palette-note';
-            this._valueNoteEl.textContent = copy.valueNote;
+            this._valueNoteEl.style.fontSize = '12px';
+            this._valueNoteEl.style.color = 'var(--text-tertiary)';
+            this._valueNoteEl.style.marginTop = 'var(--space-3)';
+            this._valueNoteEl.style.lineHeight = '1.4';
+            this._valueNoteEl.innerHTML = `<strong>Nota pedagógica:</strong> En iluminación 3D, el <em>Valor (V)</em> de un color afecta la reflectancia del material, pero para las luces, equivale a ajustar la intensidad o Exposición.`;
             container.appendChild(this._valueNoteEl);
         }
 
@@ -118,8 +129,10 @@ export class PaletteControls {
         const actions = document.createElement('div');
         actions.className = 'palette-actions';
 
+        const isGuided = !preset.isSandbox;
         const keyLight = preset.lights?.find(l => l.type === 'key');
-        if (keyLight) {
+        
+        if (keyLight && !isGuided) {
             const btnApplyLight = document.createElement('button');
             btnApplyLight.className = 'btn btn-ghost palette-action-btn';
             const lightName = keyLight.name?.es || keyLight.name?.en || keyLight.name || copy.applyToLight;
@@ -130,26 +143,170 @@ export class PaletteControls {
             actions.appendChild(btnApplyLight);
         }
 
-        const btnApplyBg = document.createElement('button');
-        btnApplyBg.className = 'btn btn-ghost palette-action-btn';
-        btnApplyBg.textContent = copy.applyToBackground;
-        btnApplyBg.addEventListener('click', () => {
-            const color = this.colorSystem.baseColor;
-            appEvents.emit('background:changed', {
-                lessonId: preset.id,
-                color,
-                source: 'palette-controls'
+        if (!isGuided) {
+            const btnApplyBg = document.createElement('button');
+            btnApplyBg.className = 'btn btn-ghost palette-action-btn';
+            btnApplyBg.textContent = copy.applyToBackground;
+            btnApplyBg.addEventListener('click', () => {
+                const color = this.colorSystem.baseColor;
+                appEvents.emit('background:changed', {
+                    lessonId: preset.id,
+                    color,
+                    source: 'palette-controls'
+                });
+                appEvents.emit('palette:applied', {
+                    lessonId: preset.id,
+                    target: 'background',
+                    colors: [color],
+                    source: 'palette-controls'
+                });
             });
-            appEvents.emit('palette:applied', {
-                lessonId: preset.id,
-                target: 'background',
-                colors: [color],
-                source: 'palette-controls'
-            });
-        });
-        actions.appendChild(btnApplyBg);
+            actions.appendChild(btnApplyBg);
+        }
 
-        container.appendChild(actions);
+        if (actions.children.length > 0) {
+            container.appendChild(actions);
+        }
+
+        // Special Controls
+        if (preset.specialControls && preset.specialControls.includes('contrastToggle')) {
+            const toggleWrap = document.createElement('div');
+            toggleWrap.className = 'control-row compact';
+            toggleWrap.style.marginTop = 'var(--space-4)';
+            
+            const btnToggle = document.createElement('button');
+            btnToggle.className = 'btn btn-secondary';
+            btnToggle.style.width = '100%';
+            btnToggle.textContent = 'Alternar Fondo Claro / Oscuro';
+            
+            let isLight = false;
+            btnToggle.addEventListener('click', () => {
+                isLight = !isLight;
+                const newValue = isLight ? 95 : 10;
+                
+                // Update slider and model
+                const valSlider = document.getElementById('palette-value');
+                if (valSlider) {
+                    valSlider.value = newValue;
+                    valSlider.dispatchEvent(new Event('input'));
+                } else {
+                    this.colorSystem.setValue(newValue / 100);
+                    this._updatePreview();
+                }
+            });
+            toggleWrap.appendChild(btnToggle);
+            container.appendChild(toggleWrap);
+        }
+
+        if (preset.specialControls && preset.specialControls.includes('emotionSelector')) {
+            const emotionWrap = document.createElement('div');
+            emotionWrap.className = 'control-row compact';
+            emotionWrap.style.marginTop = 'var(--space-4)';
+            
+            const label = document.createElement('span');
+            label.className = 'control-label';
+            label.textContent = 'Emoción (Semiótica)';
+            
+            const select = document.createElement('select');
+            select.className = 'palette-select';
+            
+            const emotions = [
+                { id: 'none', label: 'Selecciona una emoción...' },
+                { id: 'passion', label: 'Pasión / Peligro', hue: 0, sat: 0.9, val: 0.8, harmony: 'analogous' },
+                { id: 'melancholy', label: 'Melancolía / Distancia', hue: 210, sat: 0.7, val: 0.6, harmony: 'single' },
+                { id: 'cyberpunk', label: 'Sci-Fi / Cyberpunk', hue: 290, sat: 0.85, val: 0.9, harmony: 'complementary' },
+                { id: 'nature', label: 'Naturaleza / Salud', hue: 120, sat: 0.6, val: 0.7, harmony: 'analogous' },
+                { id: 'mystery', label: 'Misterio / Magia', hue: 270, sat: 0.8, val: 0.5, harmony: 'triadic' }
+            ];
+            
+            emotions.forEach(e => {
+                const opt = document.createElement('option');
+                opt.value = e.id;
+                opt.textContent = e.label;
+                select.appendChild(opt);
+            });
+            
+            select.addEventListener('change', (e) => {
+                const emotion = emotions.find(em => em.id === e.target.value);
+                if (emotion && emotion.id !== 'none') {
+                    this.colorSystem.setHue(emotion.hue);
+                    this.colorSystem.setSaturation(emotion.sat);
+                    this.colorSystem.setValue(emotion.val);
+                    if (emotion.harmony) {
+                        this.colorSystem.setHarmonyType(emotion.harmony);
+                    }
+                    
+                    // Update slider UI manually so they reflect the new state
+                    const hueSlider = document.getElementById('palette-hue');
+                    if (hueSlider) hueSlider.value = emotion.hue;
+                    const satSlider = document.getElementById('palette-saturation');
+                    if (satSlider) satSlider.value = emotion.sat * 100;
+                    const valSlider = document.getElementById('palette-value');
+                    if (valSlider) valSlider.value = emotion.val * 100;
+                    
+                    this._updatePreview();
+                }
+            });
+            
+            emotionWrap.appendChild(label);
+            emotionWrap.appendChild(select);
+            container.appendChild(emotionWrap);
+        }
+
+        if (preset.specialControls && preset.specialControls.includes('temperatureToggle')) {
+            const toggleWrap = document.createElement('div');
+            toggleWrap.className = 'control-row compact';
+            toggleWrap.style.marginTop = 'var(--space-4)';
+            
+            const btnToggle = document.createElement('button');
+            btnToggle.className = 'btn btn-secondary';
+            btnToggle.style.width = '100%';
+            btnToggle.style.transition = 'all 0.3s ease';
+            
+            let isWarm = true;
+            btnToggle.textContent = 'Cambiar a Frío ❄️';
+            btnToggle.style.background = 'linear-gradient(90deg, #1a3a5c, #2a4a7c)';
+            
+            btnToggle.addEventListener('click', () => {
+                isWarm = !isWarm;
+                const targetHue = isWarm ? 30 : 210;
+                
+                if (isWarm) {
+                    btnToggle.textContent = 'Cambiar a Frío ❄️';
+                    btnToggle.style.background = 'linear-gradient(90deg, #1a3a5c, #2a4a7c)';
+                } else {
+                    btnToggle.textContent = 'Cambiar a Cálido ☀️';
+                    btnToggle.style.background = 'linear-gradient(90deg, #7c3a1a, #9c4a2a)';
+                }
+                
+                // Animate hue
+                const hueSlider = document.getElementById('palette-hue');
+                let startHue = this.colorSystem.hue;
+                const duration = 800; // ms
+                const start = performance.now();
+                
+                const animate = (time) => {
+                    const elapsed = time - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // EaseInOutQuad
+                    const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                    const currentHue = startHue + (targetHue - startHue) * ease;
+                    this.colorSystem.setHue(currentHue);
+                    if (hueSlider) hueSlider.value = currentHue;
+                    this._updatePreview();
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        if (hueSlider) hueSlider.dispatchEvent(new Event('input'));
+                    }
+                };
+                requestAnimationFrame(animate);
+            });
+            toggleWrap.appendChild(btnToggle);
+            container.appendChild(toggleWrap);
+        }
     }
 
     _renderSlider(def, lang) {
@@ -205,7 +362,12 @@ export class PaletteControls {
         const select = document.createElement('select');
         select.className = 'palette-select';
         select.setAttribute('aria-labelledby', harmonyLabelId);
+        
+        const preset = this.getCurrentPreset();
+        const allowed = preset?.allowedHarmonies;
+        
         HARMONY_TYPES.forEach(ht => {
+            if (allowed && !allowed.includes(ht.id)) return;
             const option = document.createElement('option');
             option.value = ht.id;
             option.textContent = ht.label[lang] || ht.label.es;
@@ -255,6 +417,43 @@ export class PaletteControls {
             this._hueNameEl.textContent = this.colorSystem.getHueName(this.getLang());
         }
         this._updatePaletteSwatches();
+
+        // Auto-apply in guided mode
+        const preset = this.getCurrentPreset();
+        if (preset && !preset.isSandbox) {
+            if (preset.autoApplyPalette) {
+                // If the target is the background, apply it there
+                if (preset.paletteTargets?.includes('background')) {
+                    const color = this.colorSystem.baseColor;
+                    appEvents.emit('background:changed', {
+                        lessonId: preset.id,
+                        color,
+                        source: 'palette-controls'
+                    });
+                    appEvents.emit('palette:applied', {
+                        lessonId: preset.id,
+                        target: 'background',
+                        colors: [color],
+                        source: 'palette-controls'
+                    });
+                } else {
+                    // Apply to all mapped lights automatically
+                    this.colorSystem.applyPaletteToScene(this.lightingSystem, preset.lights);
+                }
+            } else {
+                // Default: apply single color to the currently selected or key light
+                const targetLightId = this._selectedLightId || preset.lights?.find(l => l.type === 'key')?.id;
+                if (targetLightId) {
+                    this.colorSystem.applyToLight(targetLightId, this.lightingSystem);
+                }
+            }
+            
+            // Keep the light controls slider synced visually
+            const colorInput = document.getElementById('ctrl-color');
+            if (colorInput) {
+                colorInput.value = this.colorSystem.baseColor;
+            }
+        }
     }
 
     _updatePaletteSwatches() {
