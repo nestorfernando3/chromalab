@@ -1,7 +1,7 @@
 {
   "name": "chromalab",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "productName": "ChromaLab",
   "description": "Laboratorio virtual interactivo para aprender teoría del color a través de una escena 3D",
   "author": "Néstor De León - UPCA",
