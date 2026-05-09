@@ -831,7 +831,13 @@ export class UI {
 
         appEvents.on('palette:previewChanged', () => {
             this._updatePaletteStrip();
-            this._updateDiagram();
+            if (this.colorSystem) {
+                this._updateDiagramIndicator(
+                    this.colorSystem.hue,
+                    this.colorSystem.saturation,
+                    this.colorSystem.value
+                );
+            }
         });
 
         appEvents.on('color:harmonyChanged', () => {

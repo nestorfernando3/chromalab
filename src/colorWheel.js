@@ -582,9 +582,10 @@ export class ColorWheel {
             this._hue = newHue;
             this._harmonyHues = this._calculateHarmonyHues(newHue, this._harmonyType);
 
-            if (this.onHueChange) this.onHueChange(newHue);
-
             this._canvas.setAttribute('aria-valuenow', String(newHue));
+
+            if (this.onHueChange) this.onHueChange(newHue);
+            if (this._isDestroyed || !this._canvas) return;
         }
 
         // Track velocity for inertia
@@ -635,9 +636,10 @@ export class ColorWheel {
             this._hue = newHue;
             this._harmonyHues = this._calculateHarmonyHues(newHue, this._harmonyType);
 
-            if (this.onHueChange) this.onHueChange(newHue);
-
             this._canvas.setAttribute('aria-valuenow', String(newHue));
+
+            if (this.onHueChange) this.onHueChange(newHue);
+            if (this._isDestroyed || !this._canvas) return;
         }
     }
 

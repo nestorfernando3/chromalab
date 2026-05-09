@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2] - 2026-05-09
+
+### Fixed
+
+- **Color wheel drag control**: Hue preview updates no longer re-create the wheel on every `palette:previewChanged` event. `src/ui.js` now refreshes the existing diagram indicator during live color changes, keeping pointer capture intact so dragging feels responsive.
+- **Color wheel stale-canvas guard**: `_onPointerMove()` and `_applyInertia()` update ARIA before `onHueChange()` and return if the callback destroys the wheel instance, preventing `null` canvas crashes during re-render paths.
+
 ## [1.2.0] - 2026-05-09
 
 ### Added
