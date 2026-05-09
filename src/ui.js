@@ -10,7 +10,7 @@
 import { getPresetNames, getPreset, localizePreset } from './presets.js';
 import { DEFAULT_MODEL_ID, switchModel, getModelRegistry, getBackgroundPresets, setBackdropColor } from './model.js';
 import { setupOnboarding } from './onboarding.js';
-import { renderDiagram } from './diagram.js';
+import { renderDiagram } from './colorWheel.js';
 import { clearChildren } from './utils/dom.js';
 import { LessonNavigator } from './ui/LessonNavigator.js';
 import { LightControls } from './ui/LightControls.js';
@@ -364,7 +364,7 @@ export class UI {
         const preset = this.session.currentPreset;
         if (!svg || !preset) return;
         const localizedPreset = this._getLocalizedCurrentPreset();
-        renderDiagram(localizedPreset, svg, this.lang, {
+        const controls = renderDiagram(localizedPreset, svg, this.lang, {
             onHueChange: (hue) => {
                 if (this.colorSystem) {
                     this.colorSystem.setHue(hue);
@@ -375,6 +375,8 @@ export class UI {
                 this._updateDiagram();
             }
         });
+        // Store controls reference for _updateDiagramIndicator
+        if (controls) svg._controls = controls;
     }
 
     _updateDiagramIndicator(hue, saturation, value) {

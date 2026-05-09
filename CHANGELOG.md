@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.2.0] - 2026-05-09
+
+### Added
+
+- **Interactive Color Wheel (`src/colorWheel.js`)**: Replaced static SVG wheel (`src/diagram.js`) with a Canvas 2D continuous-gradient color wheel. Features:
+  - 360-segment smooth conic gradient (no discrete segments)
+  - Drag-to-change-hue with momentum/inertia (friction 0.92)
+  - Animated harmony markers with glow and center lines
+  - Draggable hue base indicator with pulse animation during drag
+  - Keyboard navigation (arrows, Shift+arrows, Home/End, PageUp/PageDown)
+  - ARIA slider accessibility (`role="slider"`, `aria-valuenow`, `aria-valuetext`)
+  - Responsive via ResizeObserver + expand handler for collapsed section
+  - OffscreenCanvas ring caching for performance
+  - Haptic feedback on mobile (`navigator.vibrate`)
+- **Color Wheel CSS (`src/css/color-wheel.css`)**: Styles for Canvas, container layout (`aspect-ratio: 1`), hover/focus states, responsive breakpoints, and overlay positioning.
+- **`docs/color-wheel.md`**: Agent-facing documentation with architecture, data flow, debugging checklist, and fallback plans.
+
+### Changed
+
+- **`src/ui.js:13`**: Import changed from `./diagram.js` → `./colorWheel.js`. `_updateDiagram()` now stores `controls` reference in `svg._controls` for backward compatibility with `_updateDiagramIndicator()`.
+- **`style.css`**: Added `@import './src/css/color-wheel.css'` at end of cascade.
+- **`index.html:156`**: Added `id="color-wheel-container"` to `.diagram-container` div. SVG preserved as fallback.
+
+### Fixed
+
+- **Race condition crash**: `_onPointerMove` could fire after `destroy()` nullified `this._canvas`. Added guards (`this._isDestroyed || !this._canvas`) in `_onPointerMove`, `_onPointerUp`, and `_applyInertia`.
+- **`svg._controls` not persisted**: Old `_updateDiagramIndicator()` accessed `svg._controls` but new `renderDiagram` returned object without attaching it. Added `svg._controls = controls` in `_updateDiagram()`.
+
+### Retained
+
+- **`src/diagram.js`** preserved as backup. Not imported anywhere, kept for reference/fallback.
+
 ## [1.1.0] - 2026-05-08
 
 ### Added

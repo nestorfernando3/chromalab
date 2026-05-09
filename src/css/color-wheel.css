@@ -1,0 +1,74 @@
+/* ========== Color Wheel (Canvas 2D) ========== */
+
+.diagram-container {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-secondary) 0%,
+    rgba(12, 12, 16, 0.6) 100%
+  );
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border-subtle);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.diagram-container:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 0 20px rgba(196, 30, 58, 0.08);
+}
+
+.diagram-container:focus-within {
+  border-color: var(--upca-red);
+  box-shadow: 0 0 0 2px rgba(196, 30, 58, 0.3);
+}
+
+.color-wheel-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  -ms-touch-action: none;
+  outline: none;
+  border-radius: inherit;
+}
+
+.color-wheel-canvas:active {
+  cursor: grabbing;
+}
+
+.color-wheel-canvas:focus-visible {
+  outline: 2px solid var(--upca-red);
+  outline-offset: -2px;
+}
+
+.color-wheel-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hide original SVG when canvas is active */
+.diagram-container .diagram-svg {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 560px) {
+  .diagram-container {
+    aspect-ratio: 1;
+    max-height: 280px;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 960px) {
+  .diagram-container {
+    aspect-ratio: 1;
+    max-height: 320px;
+  }
+}

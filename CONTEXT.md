@@ -38,7 +38,18 @@ The UI is organized into three surfaces:
 
 - Three.js for 3D rendering
 - Vanilla JS (ES modules)
+- Canvas 2D for color wheel rendering
 - CSS custom properties for theming
 - Vite for build
 - Vitest for tests
 - localStorage for persistence
+
+## Color Wheel Architecture
+
+- **ColorWheel** — The Canvas 2D interactive chromatic wheel class (`src/colorWheel.js`, ~730 lines). Replaces the legacy SVG wheel (`src/diagram.js`). Renders a 360-segment conic gradient ring with harmony markers, draggable hue indicator, and center info panel.
+- **renderDiagram** — Compatibility wrapper function exported from `colorWheel.js`. Maintains the exact same API as `diagram.js` for drop-in replacement. Called by `ui.js:_updateDiagram()`.
+- **Canvas 2D** — The rendering surface. Uses OffscreenCanvas caching for the hue ring (no redraws on resize unless dimensions change). Render loop is lazy — only activates during drag, inertia, or explicit `updateIndicator()`.
+- **Ring geometry** — Outer radius = 42% of `min(width, height)`, inner radius = 30%. Marker radius = 3.5%. Hue indicator sits at outerR + 8px.
+- **Interaction model** — Pointer Events (unified mouse/touch/stylus) with `setPointerCapture` for reliable drag. Inertia calculated as exponential moving average of angular velocity × 0.92 friction per frame.
+- **ResizeObserver** — Watches the `.diagram-container` for dimension changes. Expand handler on `.collapsible-trigger` fires `_resize()` with 50ms delay after section expansion.
+- **Section state** — The diagram section starts collapsed (`aria-expanded="false"`). The ColorWheel is created on lesson load (even when collapsed) but deferred `_resize()` corrects dimensions on expand.
