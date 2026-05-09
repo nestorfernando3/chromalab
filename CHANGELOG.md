@@ -32,6 +32,25 @@
 
 - **`src/diagram.js`** preserved as backup. Not imported anywhere, kept for reference/fallback.
 
+## [1.2.1] - 2026-05-09
+
+### Added
+
+- **`src/evidenceStore.js`**: New `exportToText(getPresetName)` formatter — generates plain text evidence files with observation, justification, emotion, color state (hue/saturation/value/palette), completed criteria, and screenshot metadata.
+- **`tests/evidenceStore.test.js`**: Replaced "exports to JSON" test with "exports to plain text" covering all text format fields.
+
+### Changed
+
+- **`src/ui.js`**: Header "Export evidence" now calls `exportToText()` and downloads `text/plain` blob with `.txt` extension instead of `.json`.
+- **`src/ui/StudentResponse.js`**: Evidence panel export switched to `exportToText()` with `.txt` download. Fixed empty-evidence bug where `Object.keys(allEvidence)` included `version` causing false positive — now checks `allEvidence.lessons`.
+- **`src/localization.js`**: Export labels updated — (JSON) → (TXT) in ES/EN. ARIA labels reflect "en texto"/"text".
+- **`README.md`**: Updated export description from "JSON con respuestas" to "archivo de texto con respuestas".
+
+### Fixed
+
+- **`src/onboarding.js`**: Race condition when overlay/popover removed during transition — local variable captures reference before nullifying.
+- **Empty evidence export in StudentResponse panel**: Now correctly detects when no lessons have evidence instead of building a JSON payload with `version` as a false positive.
+
 ## [1.1.0] - 2026-05-08
 
 ### Added

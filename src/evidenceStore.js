@@ -74,6 +74,54 @@ export class EvidenceStore {
         return JSON.stringify(exportData, null, 2);
     }
 
+    exportToText(getPresetName = null) {
+        const exportedAt = new Date().toISOString();
+        const lines = [
+            'ChromaLab - Evidencia de observaciones',
+            `Exportado: ${exportedAt}`,
+            ''
+        ];
+
+        const lessons = Object.entries(this._data.lessons);
+        if (lessons.length === 0) {
+            lines.push('No hay evidencia guardada.');
+            return lines.join('\n');
+        }
+
+        lessons.forEach(([id, lesson], index) => {
+            const lessonName = getPresetName ? getPresetName(id) || id : id;
+            const response = lesson.response || {};
+            const colorState = lesson.colorState || {};
+            const screenshots = Array.isArray(lesson.screenshots) ? lesson.screenshots : [];
+            const criteria = Array.isArray(lesson.completedCriteria) ? lesson.completedCriteria : [];
+            const palette = Array.isArray(colorState.palette) ? colorState.palette : [];
+
+            if (index > 0) lines.push('');
+            lines.push('---');
+            lines.push(`Leccion: ${lessonName}`);
+            lines.push(`ID: ${id}`);
+            lines.push(`Observacion: ${response.observation || 'Sin observacion'}`);
+            lines.push(`Justificacion: ${response.justification || 'Sin justificacion'}`);
+            lines.push(`Emocion: ${response.emotion || 'Sin emocion'}`);
+            lines.push(`Actualizado: ${response.updatedAt || 'Sin fecha'}`);
+
+            if (lesson.colorState) {
+                lines.push('');
+                lines.push('Estado de color:');
+                lines.push(`Matiz: ${colorState.hue ?? 'N/A'}`);
+                lines.push(`Saturacion: ${colorState.saturation ?? 'N/A'}`);
+                lines.push(`Valor: ${colorState.value ?? 'N/A'}`);
+                lines.push(`Paleta: ${palette.length ? palette.join(', ') : 'N/A'}`);
+            }
+
+            lines.push('');
+            lines.push(`Criterios completados: ${criteria.length ? criteria.join(', ') : 'Ninguno'}`);
+            lines.push(`Capturas: ${screenshots.length ? screenshots.map((shot) => `${shot.filename} (${shot.role})`).join(', ') : 'Ninguna'}`);
+        });
+
+        return lines.join('\n');
+    }
+
     reset() {
         this._data = { version: 1, lessons: {} };
         this._save();

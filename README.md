@@ -16,7 +16,7 @@ Laboratorio virtual interactivo para aprender teoría del color.
 - **Evidencia guardable** — observaciones, paletas y capturas persistentes por lección
 - **Sala 3D interactiva** para experimentar con paletas en tiempo real
 - **Diagrama de rueda cromática** para visualizar armonías
-- **Exportación de evidencia** — JSON con respuestas y paletas, copiar resumen al portapapeles
+- **Exportación de evidencia** — archivo de texto con respuestas y paletas, copiar resumen al portapapeles
 - **Bilingüe** (español / inglés)
 
 ## 🚀 Instalación

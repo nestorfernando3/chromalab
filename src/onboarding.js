@@ -130,14 +130,16 @@ export function setupOnboarding(onStartCallback, { skipAutoStart = false } = {})
             currentHighlight = null;
         }
         if (tourOverlay) {
-            tourOverlay.classList.remove('visible');
-            setTimeout(() => tourOverlay.remove(), 300);
+            const overlay = tourOverlay;
             tourOverlay = null;
+            overlay.classList.remove('visible');
+            setTimeout(() => overlay.remove(), 300);
         }
         if (tourPopover) {
-            tourPopover.classList.remove('visible');
-            setTimeout(() => tourPopover.remove(), 300);
+            const popover = tourPopover;
             tourPopover = null;
+            popover.classList.remove('visible');
+            setTimeout(() => popover.remove(), 300);
         }
     }
 

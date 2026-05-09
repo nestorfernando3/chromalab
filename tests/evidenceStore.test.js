@@ -55,12 +55,35 @@ describe('EvidenceStore', () => {
         expect(evidence.completedCriteria).toContain('adjust-saturation');
     });
 
-    it('exports to JSON', () => {
-        store.saveResponse('lesson-1', { observation: 'test' });
-        const json = store.exportToJSON();
-        const data = JSON.parse(json);
-        expect(data.version).toBe(1);
-        expect(data.lessons['lesson-1'].response.observation).toBe('test');
+    it('exports to plain text', () => {
+        store.saveResponse('lesson-1', {
+            observation: 'El color se ve mas calido.',
+            justification: 'La luz naranja domina la escena.',
+            emotion: 'Calma'
+        });
+        store.saveColorState('lesson-1', {
+            hue: 32,
+            saturation: 0.7,
+            value: 0.8,
+            palette: ['#ff8800', '#2244ff']
+        });
+        store.registerScreenshot('lesson-1', 'lesson-1.png', 'evidence');
+        store.saveCriteria('lesson-1', ['adjust-hue', 'write-observation']);
+
+        const text = store.exportToText((lessonId) => `Nombre ${lessonId}`);
+
+        expect(text).toContain('ChromaLab - Evidencia de observaciones');
+        expect(text).toContain('Leccion: Nombre lesson-1');
+        expect(text).toContain('ID: lesson-1');
+        expect(text).toContain('Observacion: El color se ve mas calido.');
+        expect(text).toContain('Justificacion: La luz naranja domina la escena.');
+        expect(text).toContain('Emocion: Calma');
+        expect(text).toContain('Matiz: 32');
+        expect(text).toContain('Saturacion: 0.7');
+        expect(text).toContain('Valor: 0.8');
+        expect(text).toContain('Paleta: #ff8800, #2244ff');
+        expect(text).toContain('Criterios completados: adjust-hue, write-observation');
+        expect(text).toContain('Capturas: lesson-1.png (evidence)');
     });
 
     it('handles corrupted localStorage gracefully', () => {

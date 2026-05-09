@@ -1020,7 +1020,7 @@ export class UI {
 
     _exportEvidence() {
         if (!this.evidenceStore) return;
-        const json = this.evidenceStore.exportToJSON((lessonId) => {
+        const text = this.evidenceStore.exportToText((lessonId) => {
             const index = this.session.presetNames.indexOf(lessonId);
             if (index >= 0) {
                 const p = this.session.presets[index];
@@ -1030,11 +1030,11 @@ export class UI {
             return lessonId;
         });
 
-        const blob = new Blob([json], { type: 'application/json' });
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `chromalab_evidence_${new Date().getTime()}.json`;
+        a.download = `chromalab_evidence_${new Date().getTime()}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

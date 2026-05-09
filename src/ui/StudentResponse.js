@@ -265,24 +265,19 @@ export class StudentResponse {
 
     _exportEvidence() {
         const copy = this._getCopy(this.getLang());
-        const allEvidence = this.evidenceStore?.getAllEvidence?.() || {};
-        const lessonIds = Object.keys(allEvidence);
+        const allEvidence = this.evidenceStore?.getAllEvidence?.() || { lessons: {} };
+        const lessonIds = Object.keys(allEvidence.lessons || {});
         if (lessonIds.length === 0) {
             this._showToast(copy.exportEmpty || 'No evidence to export');
             return;
         }
-        const payload = {
-            exportedAt: new Date().toISOString(),
-            lessons: lessonIds.map(id => ({
-                lessonId: id,
-                ...allEvidence[id]
-            }))
-        };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+
+        const text = this.evidenceStore.exportToText();
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `chromalab-evidence-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `chromalab-evidence-${new Date().toISOString().slice(0, 10)}.txt`;
         a.click();
         URL.revokeObjectURL(url);
     }
