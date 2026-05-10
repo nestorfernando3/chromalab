@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.3] - 2026-05-09
+
+### Added
+
+- **Sala V2 procedural room model (`src/model.js`)**: New `createSalaV2Room()` procedural room — furnished interior with window, sofa, coffee table, floor lamp, curtains, potted plant, decorative objects, color swatches, and framed Starry Night painting. Model ID `sala_v2`, registered in `MODEL_REGISTRY`. Dispatched in `loadModel()` alongside existing `createVirtualColorRoom()`. Image at `public/models/Vincent_van_Gogh_Starry_Night.jpg`.
+
+### Changed
+
+- **`src/model.js:1`**: Added `MeshPhysicalMaterial`, `TextureLoader`, `LatheGeometry` to Three.js imports for Sala V2 materials and geometry.
+- **`src/model.js:80`**: Added `sala_v2` entry to `MODEL_REGISTRY` with ES/EN descriptions and proceduralRoom kind.
+- **`src/model.js:306`**: `loadModel()` dispatches `sala_v2` to `createSalaV2Room()`.
+
 ## [1.2.2] - 2026-05-09
 
 ### Fixed
