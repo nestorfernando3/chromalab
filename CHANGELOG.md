@@ -12,6 +12,12 @@
 - **`src/model.js:80`**: Added `sala_v2` entry to `MODEL_REGISTRY` with ES/EN descriptions and proceduralRoom kind.
 - **`src/model.js:306`**: `loadModel()` dispatches `sala_v2` to `createSalaV2Room()`.
 
+### Fixed
+
+- **Missing `DoubleSide` import**: Sala V2 attempted to use bare `DoubleSide` without importing it from Three.js. Added to import line.
+- **Room z-fighting with ground plane**: Sala V2 floor at `y=0` clashed with environment ground plane. Added `room.position.y = 0.02` offset.
+- **Sofa position overwritten by chained `.add().position.set()`**: `Group.add()` returns the group, not the child mesh — sofa group position was overwritten from `(-0.95, 0, -1.45)` to `(0, 0.24, 0)`, placing the sofa on the coffee table. Same pattern fixed for shelf book meshes.
+
 ## [1.2.2] - 2026-05-09
 
 ### Fixed
