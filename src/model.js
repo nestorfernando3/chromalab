@@ -372,7 +372,9 @@ function createSalaV2Room() {
     const sofa = new Group();
     sofa.name = 'sofa';
     sofa.position.set(-0.95, 0, -1.45);
-    sofa.add(new Mesh(new BoxGeometry(2.15, 0.22, 0.82), createRoomMaterial(0x4a4a4e, { roughness: 0.7 }))).position.set(0, 0.24, 0);
+    const sofaBase = new Mesh(new BoxGeometry(2.15, 0.22, 0.82), createRoomMaterial(0x4a4a4e, { roughness: 0.7 }));
+    sofaBase.position.set(0, 0.24, 0);
+    sofa.add(sofaBase);
     [-1, 0, 1].forEach(i => {
         const c = new Mesh(new BoxGeometry(0.62, 0.16, 0.72), createRoomMaterial(0x5c5c62, { roughness: 0.85 }));
         c.position.set(i * 0.68, 0.42, 0.04);
@@ -512,8 +514,12 @@ function createSalaV2Room() {
     const potSh = new Mesh(new CylinderGeometry(0.025, 0.03, 0.04, 8), createRoomMaterial(0x8a7a6a, { roughness: 0.5 }));
     potSh.position.set(-0.18, 0.035, 0);
     shObj.add(potSh);
-    shObj.add(new Mesh(new BoxGeometry(0.06, 0.01, 0.07), createRoomMaterial(0x4a6a8a, { roughness: 0.5 }))).position.set(0.12, 0.016, 0);
-    shObj.add(new Mesh(new BoxGeometry(0.055, 0.008, 0.065), createRoomMaterial(0xc97a5e, { roughness: 0.5 }))).position.set(0.12, 0.03, 0.004);
+    const sb1 = new Mesh(new BoxGeometry(0.06, 0.01, 0.07), createRoomMaterial(0x4a6a8a, { roughness: 0.5 }));
+    sb1.position.set(0.12, 0.016, 0);
+    shObj.add(sb1);
+    const sb2 = new Mesh(new BoxGeometry(0.055, 0.008, 0.065), createRoomMaterial(0xc97a5e, { roughness: 0.5 }));
+    sb2.position.set(0.12, 0.03, 0.004);
+    shObj.add(sb2);
     const ff = new Mesh(new PlaneGeometry(0.055, 0.07), createRoomMaterial(0xd4c8b8, { roughness: 0.3, metalness: 0.05 }));
     ff.name = 'shelf-photo-frame';
     shObj.add(ff);
