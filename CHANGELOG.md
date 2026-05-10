@@ -4,19 +4,13 @@
 
 ### Added
 
-- **Sala V2 procedural room model (`src/model.js`)**: New `createSalaV2Room()` procedural room — furnished interior with window, sofa, coffee table, floor lamp, curtains, potted plant, decorative objects, color swatches, and framed Starry Night painting. Model ID `sala_v2`, registered in `MODEL_REGISTRY`. Dispatched in `loadModel()` alongside existing `createVirtualColorRoom()`. Image at `public/models/Vincent_van_Gogh_Starry_Night.jpg`.
-
-### Changed
-
-- **`src/model.js:1`**: Added `MeshPhysicalMaterial`, `TextureLoader`, `LatheGeometry` to Three.js imports for Sala V2 materials and geometry.
-- **`src/model.js:80`**: Added `sala_v2` entry to `MODEL_REGISTRY` with ES/EN descriptions and proceduralRoom kind.
-- **`src/model.js:306`**: `loadModel()` dispatches `sala_v2` to `createSalaV2Room()`.
+- **Sala V2** — a new furnished room model for testing color and lighting. Includes a sofa, coffee table, floor lamp, window with curtains, potted plant, decorative objects, color swatches on the back wall, and framed Starry Night painting. Available in the model selector.
 
 ### Fixed
 
-- **Missing `DoubleSide` import**: Sala V2 attempted to use bare `DoubleSide` without importing it from Three.js. Added to import line.
-- **Room z-fighting with ground plane**: Sala V2 floor at `y=0` clashed with environment ground plane. Added `room.position.y = 0.02` offset.
-- **Sofa position overwritten by chained `.add().position.set()`**: `Group.add()` returns the group, not the child mesh — sofa group position was overwritten from `(-0.95, 0, -1.45)` to `(0, 0.24, 0)`, placing the sofa on the coffee table. Same pattern fixed for shelf book meshes.
+- **Sala V2 sofa sitting on the coffee table** — sofa group position was being overwritten because `Group.add()` returns the group, not the child mesh.
+- **Sala V2 floor flickering** — room floor was at the same height as the scene ground, causing z-fighting. Lifted slightly to stop the shimmer.
+- **Sala V2 missing Three.js import** — `DoubleSide` not imported for wall and floor materials.
 
 ## [1.2.2] - 2026-05-09
 
