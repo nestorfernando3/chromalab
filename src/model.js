@@ -1,4 +1,4 @@
-import { Group, MeshStandardMaterial, MeshPhysicalMaterial, Mesh, CylinderGeometry, SphereGeometry, LatheGeometry, Color, BackSide, CircleGeometry, AmbientLight, FogExp2, Vector2, BoxGeometry, PlaneGeometry, TextureLoader } from 'three';
+import { Group, MeshStandardMaterial, MeshPhysicalMaterial, Mesh, CylinderGeometry, SphereGeometry, LatheGeometry, Color, BackSide, DoubleSide, CircleGeometry, AmbientLight, FogExp2, Vector2, BoxGeometry, PlaneGeometry, TextureLoader } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { appEvents } from './utils/events.js';
 import { DEFAULT_LANGUAGE, normalizeLanguage } from './runtime.js';
