@@ -645,6 +645,8 @@ function createSalaV2Room() {
     }));
     room.add(st);
 
+    room.position.set(0, 0.02, 0.55);
+    room.rotation.y = Math.PI / 18;
     return room;
 }
 
